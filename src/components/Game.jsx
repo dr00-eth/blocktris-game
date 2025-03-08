@@ -62,9 +62,9 @@ const Game = ({ wallet }) => {
   const canFinalizeGame = wallet && wallet.isConnected && wallet.isCorrectNetwork;
   
   return (
-    <div className="game-container p-4">
-      <div className="flex flex-col md:flex-row gap-6 justify-center items-start">
-        <div className="game-main">
+    <div className="game-container p-2 sm:p-4 max-w-6xl mx-auto">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 justify-center items-center lg:items-start">
+        <div className="game-main w-full lg:w-auto">
           <GameBoard gameState={gameState} />
           <GameControls 
             onInput={onInput} 
@@ -74,16 +74,19 @@ const Game = ({ wallet }) => {
           />
         </div>
         
-        <div className="game-sidebar max-w-xs w-full">
+        <div className="game-sidebar w-full lg:max-w-xs">
           <div className="game-info flex flex-col gap-4">
-            <ScoreBoard 
-              score={gameState.score} 
-              linesCleared={gameState.linesCleared}
-              level={gameState.level || 1}
-              gameOver={gameState.gameOver} 
-            />
-            
-            <BlockPreview nextBlock={gameState.nextBlock} />
+            <div className="flex flex-row lg:flex-col gap-4">
+              <ScoreBoard 
+                score={gameState.score} 
+                linesCleared={gameState.linesCleared}
+                level={gameState.level || 1}
+                gameOver={gameState.gameOver} 
+                className="flex-1"
+              />
+              
+              <BlockPreview nextBlock={gameState.nextBlock} className="flex-1" />
+            </div>
             
             {gameState.gameOver && (
               <div className="mt-4">

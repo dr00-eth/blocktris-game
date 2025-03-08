@@ -1,8 +1,8 @@
 import React from 'react';
 
-const ScoreBoard = ({ score, linesCleared, level, gameOver }) => {
+const ScoreBoard = ({ score, linesCleared, level, gameOver, className }) => {
   return (
-    <div className="score-board bg-gray-800 p-4 rounded-md">
+    <div className={`score-board bg-gray-800 p-4 rounded-md ${className || ''}`}>
       <h3 className="text-lg font-medium mb-3 text-center">Stats</h3>
       
       <div className="grid grid-cols-1 gap-3">

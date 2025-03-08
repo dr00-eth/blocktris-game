@@ -1,13 +1,37 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Stage, Layer, Rect, Group, Text } from 'react-konva';
 
-const CELL_SIZE = 30;
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
+const DEFAULT_CELL_SIZE = 30;
+const MIN_CELL_SIZE = 15;
 
 const GameBoard = ({ gameState }) => {
   const stageRef = useRef(null);
+  const containerRef = useRef(null);
+  const [cellSize, setCellSize] = useState(DEFAULT_CELL_SIZE);
   const { board, currentBlock, currentBlockPosition, ghostPosition, gameOver } = gameState;
+  
+  // Adjust cell size based on screen width
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (!containerRef.current) return;
+      
+      const containerWidth = containerRef.current.clientWidth;
+      const maxBoardWidth = Math.min(containerWidth, 600); // Cap at 600px max width
+      
+      // Calculate cell size based on available width
+      const newCellSize = Math.max(Math.floor(maxBoardWidth / BOARD_WIDTH), MIN_CELL_SIZE);
+      setCellSize(newCellSize);
+    };
+    
+    // Initial calculation
+    updateDimensions();
+    
+    // Update on resize
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
   
   // Draw the game board grid
   const renderGrid = () => {
@@ -19,10 +43,10 @@ const GameBoard = ({ gameState }) => {
         grid.push(
           <Rect
             key={`grid-${x}-${y}`}
-            x={x * CELL_SIZE}
-            y={y * CELL_SIZE}
-            width={CELL_SIZE}
-            height={CELL_SIZE}
+            x={x * cellSize}
+            y={y * cellSize}
+            width={cellSize}
+            height={cellSize}
             stroke="#333"
             strokeWidth={1}
             fill="#111"
@@ -47,10 +71,10 @@ const GameBoard = ({ gameState }) => {
           blocks.push(
             <Rect
               key={`block-${x}-${y}`}
-              x={x * CELL_SIZE}
-              y={y * CELL_SIZE}
-              width={CELL_SIZE}
-              height={CELL_SIZE}
+              x={x * cellSize}
+              y={y * cellSize}
+              width={cellSize}
+              height={cellSize}
               fill={cell.color || '#3366FF'}
               stroke="#000"
               strokeWidth={1}
@@ -79,10 +103,10 @@ const GameBoard = ({ gameState }) => {
           blocks.push(
             <Rect
               key={`ghost-${x}-${y}`}
-              x={(posX + x) * CELL_SIZE}
-              y={(posY + y) * CELL_SIZE}
-              width={CELL_SIZE}
-              height={CELL_SIZE}
+              x={(posX + x) * cellSize}
+              y={(posY + y) * cellSize}
+              width={cellSize}
+              height={cellSize}
               fill={color}
               opacity={0.2}
               stroke="#FFFFFF"
@@ -112,10 +136,10 @@ const GameBoard = ({ gameState }) => {
           blocks.push(
             <Rect
               key={`current-${x}-${y}`}
-              x={(posX + x) * CELL_SIZE}
-              y={(posY + y) * CELL_SIZE}
-              width={CELL_SIZE}
-              height={CELL_SIZE}
+              x={(posX + x) * cellSize}
+              y={(posY + y) * cellSize}
+              width={cellSize}
+              height={cellSize}
               fill={color || '#3366FF'}
               stroke="#000"
               strokeWidth={1}
@@ -133,48 +157,52 @@ const GameBoard = ({ gameState }) => {
   const renderGameOver = () => {
     if (!gameOver) return null;
     
+    const boardWidth = BOARD_WIDTH * cellSize;
+    const boardHeight = BOARD_HEIGHT * cellSize;
+    const fontSize = Math.max(16, Math.floor(cellSize * 0.8));
+    
     return (
       <Group>
         <Rect
           x={0}
           y={0}
-          width={BOARD_WIDTH * CELL_SIZE}
-          height={BOARD_HEIGHT * CELL_SIZE}
+          width={boardWidth}
+          height={boardHeight}
           fill="rgba(0, 0, 0, 0.7)"
         />
         <Rect
-          x={BOARD_WIDTH * CELL_SIZE / 2 - 100}
-          y={BOARD_HEIGHT * CELL_SIZE / 2 - 30}
-          width={200}
-          height={60}
+          x={boardWidth / 2 - (boardWidth * 0.4)}
+          y={boardHeight / 2 - (fontSize * 1.5)}
+          width={boardWidth * 0.8}
+          height={fontSize * 3}
           fill="#FF0000"
           cornerRadius={5}
         />
         <Text
-          x={BOARD_WIDTH * CELL_SIZE / 2}
-          y={BOARD_HEIGHT * CELL_SIZE / 2}
+          x={boardWidth / 2}
+          y={boardHeight / 2}
           text="GAME OVER"
-          fontSize={24}
+          fontSize={fontSize}
           fontFamily="'Press Start 2P', monospace"
           fill="white"
           align="center"
           verticalAlign="middle"
-          width={200}
-          height={60}
-          offsetX={100}
-          offsetY={30}
+          width={boardWidth * 0.8}
+          height={fontSize * 3}
+          offsetX={boardWidth * 0.4}
+          offsetY={fontSize * 1.5}
         />
       </Group>
     );
   };
   
   return (
-    <div className="game-board">
+    <div className="game-board w-full" ref={containerRef}>
       <Stage
         ref={stageRef}
-        width={BOARD_WIDTH * CELL_SIZE}
-        height={BOARD_HEIGHT * CELL_SIZE}
-        className="border border-gray-700 rounded-md overflow-hidden shadow-lg"
+        width={BOARD_WIDTH * cellSize}
+        height={BOARD_HEIGHT * cellSize}
+        className="border border-gray-700 rounded-md overflow-hidden shadow-lg mx-auto"
       >
         <Layer>
           <Group>{renderGrid()}</Group>

@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 const GameControls = ({ onInput, gameOver, isPaused, onRestart }) => {
   const [touchControls, setTouchControls] = useState(false);
+  const touchStartRef = useRef({ x: 0, y: 0 });
+  const touchAreaRef = useRef(null);
 
   // Handle keyboard controls
   useEffect(() => {
@@ -50,6 +52,58 @@ const GameControls = ({ onInput, gameOver, isPaused, onRestart }) => {
     };
   }, [onInput, gameOver]);
 
+  // Handle swipe gestures
+  useEffect(() => {
+    if (!touchControls || gameOver || isPaused || !touchAreaRef.current) return;
+
+    const touchArea = touchAreaRef.current;
+    
+    const handleTouchStart = (e) => {
+      const touch = e.touches[0];
+      touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    };
+    
+    const handleTouchEnd = (e) => {
+      if (e.changedTouches.length === 0) return;
+      
+      const touch = e.changedTouches[0];
+      const deltaX = touch.clientX - touchStartRef.current.x;
+      const deltaY = touch.clientY - touchStartRef.current.y;
+      
+      // Minimum distance for a swipe
+      const minSwipeDistance = 30;
+      
+      // Determine if horizontal or vertical swipe based on which delta is larger
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        // Horizontal swipe
+        if (Math.abs(deltaX) > minSwipeDistance) {
+          if (deltaX > 0) {
+            onInput('right');
+          } else {
+            onInput('left');
+          }
+        }
+      } else {
+        // Vertical swipe
+        if (Math.abs(deltaY) > minSwipeDistance) {
+          if (deltaY > 0) {
+            onInput('down');
+          } else {
+            onInput('hardDrop');
+          }
+        }
+      }
+    };
+    
+    touchArea.addEventListener('touchstart', handleTouchStart);
+    touchArea.addEventListener('touchend', handleTouchEnd);
+    
+    return () => {
+      touchArea.removeEventListener('touchstart', handleTouchStart);
+      touchArea.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [touchControls, onInput, gameOver, isPaused]);
+
   // Handle button click
   const handleButtonClick = (inputType) => {
     if (gameOver || isPaused) return;
@@ -58,6 +112,16 @@ const GameControls = ({ onInput, gameOver, isPaused, onRestart }) => {
 
   return (
     <div className="game-controls mt-4">
+      {/* Swipe area for touch gestures */}
+      {touchControls && (
+        <div 
+          ref={touchAreaRef}
+          className="touch-swipe-area w-full h-20 bg-gray-800 bg-opacity-30 rounded-md mb-4 flex items-center justify-center"
+        >
+          <p className="text-gray-400 text-sm">Swipe area: ← → ↑ ↓</p>
+        </div>
+      )}
+
       {/* Mobile touch controls */}
       <div className="touch-controls grid grid-cols-3 gap-2 max-w-xs mx-auto">
         <div className="col-start-2">
@@ -146,7 +210,7 @@ const GameControls = ({ onInput, gameOver, isPaused, onRestart }) => {
       
       {/* Keyboard controls help */}
       <div className="mt-6 text-sm text-gray-400">
-        <h3 className="font-medium mb-2">Keyboard Controls:</h3>
+        <h3 className="font-medium mb-2">Controls:</h3>
         <ul className="grid grid-cols-2 gap-1">
           <li>← : Move Left</li>
           <li>→ : Move Right</li>
@@ -154,6 +218,13 @@ const GameControls = ({ onInput, gameOver, isPaused, onRestart }) => {
           <li>↑ : Rotate</li>
           <li>Space : Hard Drop</li>
           <li>P : Pause/Resume</li>
+          {touchControls && (
+            <>
+              <li>Swipe Left/Right: Move</li>
+              <li>Swipe Down: Soft Drop</li>
+              <li>Swipe Up: Hard Drop</li>
+            </>
+          )}
         </ul>
       </div>
     </div>

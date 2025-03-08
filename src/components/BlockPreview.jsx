@@ -1,10 +1,36 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Stage, Layer, Rect } from 'react-konva';
 
-const CELL_SIZE = 25;
+const DEFAULT_CELL_SIZE = 25;
 const PREVIEW_SIZE = 4;
+const MIN_CELL_SIZE = 15;
 
-const BlockPreview = ({ nextBlock }) => {
+const BlockPreview = ({ nextBlock, className }) => {
+  const containerRef = useRef(null);
+  const [cellSize, setCellSize] = useState(DEFAULT_CELL_SIZE);
+  
+  // Adjust cell size based on container width
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (!containerRef.current) return;
+      
+      const containerWidth = containerRef.current.clientWidth;
+      // Leave some padding for the container
+      const availableWidth = Math.max(containerWidth - 32, 80); 
+      
+      // Calculate cell size based on available width
+      const newCellSize = Math.max(Math.floor(availableWidth / PREVIEW_SIZE), MIN_CELL_SIZE);
+      setCellSize(newCellSize);
+    };
+    
+    // Initial calculation
+    updateDimensions();
+    
+    // Update on resize
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
+  
   // Render the next block
   const renderNextBlock = () => {
     if (!nextBlock) return [];
@@ -24,10 +50,10 @@ const BlockPreview = ({ nextBlock }) => {
           blocks.push(
             <Rect
               key={`preview-${x}-${y}`}
-              x={(offsetX + x) * CELL_SIZE}
-              y={(offsetY + y) * CELL_SIZE}
-              width={CELL_SIZE}
-              height={CELL_SIZE}
+              x={(offsetX + x) * cellSize}
+              y={(offsetY + y) * cellSize}
+              width={cellSize}
+              height={cellSize}
               fill={color}
               stroke="#000"
               strokeWidth={1}
@@ -50,10 +76,10 @@ const BlockPreview = ({ nextBlock }) => {
         grid.push(
           <Rect
             key={`preview-grid-${x}-${y}`}
-            x={x * CELL_SIZE}
-            y={y * CELL_SIZE}
-            width={CELL_SIZE}
-            height={CELL_SIZE}
+            x={x * cellSize}
+            y={y * cellSize}
+            width={cellSize}
+            height={cellSize}
             stroke="#333"
             strokeWidth={1}
             fill="#111"
@@ -66,12 +92,12 @@ const BlockPreview = ({ nextBlock }) => {
   };
   
   return (
-    <div className="block-preview bg-gray-800 p-4 rounded-md">
+    <div className={`block-preview bg-gray-800 p-4 rounded-md ${className || ''}`} ref={containerRef}>
       <h3 className="text-lg font-medium mb-2 text-center">Next Block</h3>
       <div className="flex justify-center">
         <Stage
-          width={PREVIEW_SIZE * CELL_SIZE}
-          height={PREVIEW_SIZE * CELL_SIZE}
+          width={PREVIEW_SIZE * cellSize}
+          height={PREVIEW_SIZE * cellSize}
           className="border border-gray-700 rounded-md overflow-hidden"
         >
           <Layer>
