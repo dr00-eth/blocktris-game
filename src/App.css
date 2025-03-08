@@ -21,6 +21,18 @@
 /* Game board styles */
 .game-board {
   touch-action: none; /* Prevent scrolling on mobile when using touch controls */
+  position: relative;
+}
+
+/* Touch hint overlay fade-in/fade-out */
+@keyframes fadeOut {
+  0% { opacity: 0.8; }
+  70% { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+
+.game-board .touch-controls-hint {
+  animation: fadeOut 3s forwards;
 }
 
 /* Touch swipe area */

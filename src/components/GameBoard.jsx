@@ -6,11 +6,13 @@ const BOARD_HEIGHT = 20;
 const DEFAULT_CELL_SIZE = 30;
 const MIN_CELL_SIZE = 15;
 
-const GameBoard = ({ gameState }) => {
+const GameBoard = ({ gameState, onInput }) => {
   const stageRef = useRef(null);
   const containerRef = useRef(null);
+  const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
   const [cellSize, setCellSize] = useState(DEFAULT_CELL_SIZE);
-  const { board, currentBlock, currentBlockPosition, ghostPosition, gameOver } = gameState;
+  const [isMobile, setIsMobile] = useState(false);
+  const { board, currentBlock, currentBlockPosition, ghostPosition, gameOver, isPaused } = gameState;
   
   // Adjust cell size based on screen width
   useEffect(() => {
@@ -30,8 +32,90 @@ const GameBoard = ({ gameState }) => {
     
     // Update on resize
     window.addEventListener('resize', updateDimensions);
+    
+    // Check if we're on a mobile device
+    const checkMobile = () => {
+      const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      setIsMobile(isMobileDevice);
+    };
+    
+    checkMobile();
+    
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
+  
+  // Handle touch controls
+  useEffect(() => {
+    if (!containerRef.current || !onInput || gameOver || !isMobile) return;
+    
+    const container = containerRef.current;
+    
+    const handleTouchStart = (e) => {
+      if (gameOver || isPaused) return;
+      
+      const touch = e.touches[0];
+      touchStartRef.current = { 
+        x: touch.clientX, 
+        y: touch.clientY,
+        time: Date.now()
+      };
+    };
+    
+    const handleTouchEnd = (e) => {
+      if (gameOver || isPaused) return;
+      if (e.changedTouches.length === 0) return;
+      
+      const touch = e.changedTouches[0];
+      const deltaX = touch.clientX - touchStartRef.current.x;
+      const deltaY = touch.clientY - touchStartRef.current.y;
+      const deltaTime = Date.now() - touchStartRef.current.time;
+      
+      // Minimum distance for a swipe
+      const minSwipeDistance = 30;
+      // Maximum time for a tap (ms)
+      const maxTapTime = 300;
+      // Maximum movement for a tap
+      const maxTapMovement = 10;
+      
+      // Check if it's a tap
+      if (deltaTime < maxTapTime && 
+          Math.abs(deltaX) < maxTapMovement && 
+          Math.abs(deltaY) < maxTapMovement) {
+        // It's a tap - rotate the piece
+        onInput('rotate');
+        return;
+      }
+      
+      // Determine if horizontal or vertical swipe based on which delta is larger
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        // Horizontal swipe
+        if (Math.abs(deltaX) > minSwipeDistance) {
+          if (deltaX > 0) {
+            onInput('right');
+          } else {
+            onInput('left');
+          }
+        }
+      } else {
+        // Vertical swipe
+        if (Math.abs(deltaY) > minSwipeDistance) {
+          if (deltaY > 0) {
+            onInput('down');
+          } else {
+            onInput('hardDrop');
+          }
+        }
+      }
+    };
+    
+    container.addEventListener('touchstart', handleTouchStart);
+    container.addEventListener('touchend', handleTouchEnd);
+    
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [onInput, gameOver, isPaused, isMobile]);
   
   // Draw the game board grid
   const renderGrid = () => {
@@ -196,8 +280,53 @@ const GameBoard = ({ gameState }) => {
     );
   };
   
+  // Render touch controls hint overlay
+  const renderTouchHint = () => {
+    if (!isMobile || gameOver) return null;
+    
+    const boardWidth = BOARD_WIDTH * cellSize;
+    const boardHeight = BOARD_HEIGHT * cellSize;
+    
+    return (
+      <Group>
+        <Rect
+          x={0}
+          y={0}
+          width={boardWidth}
+          height={boardHeight}
+          fill="rgba(0, 0, 0, 0.1)"
+          opacity={0.3}
+        />
+        <Text
+          x={boardWidth / 2}
+          y={boardHeight / 2 - 20}
+          text="Swipe to move"
+          fontSize={14}
+          fontFamily="sans-serif"
+          fill="white"
+          align="center"
+          verticalAlign="middle"
+          width={boardWidth}
+          offsetX={boardWidth / 2}
+        />
+        <Text
+          x={boardWidth / 2}
+          y={boardHeight / 2 + 10}
+          text="Tap to rotate"
+          fontSize={14}
+          fontFamily="sans-serif"
+          fill="white"
+          align="center"
+          verticalAlign="middle"
+          width={boardWidth}
+          offsetX={boardWidth / 2}
+        />
+      </Group>
+    );
+  };
+  
   return (
-    <div className="game-board w-full" ref={containerRef}>
+    <div className="game-board w-full relative" ref={containerRef}>
       <Stage
         ref={stageRef}
         width={BOARD_WIDTH * cellSize}
@@ -210,8 +339,16 @@ const GameBoard = ({ gameState }) => {
           <Group>{renderPlacedBlocks()}</Group>
           <Group>{renderCurrentBlock()}</Group>
           {renderGameOver()}
+          {isPaused ? null : renderTouchHint()}
         </Layer>
       </Stage>
+      {isMobile && !gameOver && !isPaused && (
+        <div className="touch-controls-hint absolute top-2 left-0 right-0 text-center pointer-events-none">
+          <div className="inline-block bg-black bg-opacity-50 text-white text-xs px-3 py-1 rounded-full">
+            Tap to rotate • Swipe to move
+          </div>
+        </div>
+      )}
     </div>
   );
 };

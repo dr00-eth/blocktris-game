@@ -41,6 +41,3 @@ const ScoreBoard = ({ score, linesCleared, level, gameOver, className }) => {
       )}
     </div>
   );
-};
-
-export default ScoreBoard;

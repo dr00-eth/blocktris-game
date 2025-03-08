@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 
-const GameControls = ({ onInput, gameOver, isPaused, onRestart }) => {
+const GameControls = ({ onInput, gameOver, isPaused, onRestart, useOverlayControls = false }) => {
   const [touchControls, setTouchControls] = useState(false);
   const touchStartRef = useRef({ x: 0, y: 0 });
   const touchAreaRef = useRef(null);
@@ -52,9 +52,9 @@ const GameControls = ({ onInput, gameOver, isPaused, onRestart }) => {
     };
   }, [onInput, gameOver]);
 
-  // Handle swipe gestures
+  // Handle swipe gestures (only if not using overlay controls)
   useEffect(() => {
-    if (!touchControls || gameOver || isPaused || !touchAreaRef.current) return;
+    if (!touchControls || gameOver || isPaused || !touchAreaRef.current || useOverlayControls) return;
 
     const touchArea = touchAreaRef.current;
     
@@ -102,7 +102,7 @@ const GameControls = ({ onInput, gameOver, isPaused, onRestart }) => {
       touchArea.removeEventListener('touchstart', handleTouchStart);
       touchArea.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [touchControls, onInput, gameOver, isPaused]);
+  }, [touchControls, onInput, gameOver, isPaused, useOverlayControls]);
 
   // Handle button click
   const handleButtonClick = (inputType) => {
@@ -112,8 +112,8 @@ const GameControls = ({ onInput, gameOver, isPaused, onRestart }) => {
 
   return (
     <div className="game-controls mt-4">
-      {/* Swipe area for touch gestures */}
-      {touchControls && (
+      {/* Swipe area for touch gestures - only show if not using overlay controls */}
+      {touchControls && !useOverlayControls && (
         <div 
           ref={touchAreaRef}
           className="touch-swipe-area w-full h-20 bg-gray-800 bg-opacity-30 rounded-md mb-4 flex items-center justify-center"
@@ -223,6 +223,7 @@ const GameControls = ({ onInput, gameOver, isPaused, onRestart }) => {
               <li>Swipe Left/Right: Move</li>
               <li>Swipe Down: Soft Drop</li>
               <li>Swipe Up: Hard Drop</li>
+              {useOverlayControls && <li>Tap: Rotate</li>}
             </>
           )}
         </ul>

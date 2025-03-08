@@ -61,16 +61,26 @@ const Game = ({ wallet }) => {
   // Determine if the user can finalize the game (requires wallet connection)
   const canFinalizeGame = wallet && wallet.isConnected && wallet.isCorrectNetwork;
   
+  // Add isPaused to gameState for GameBoard
+  const enhancedGameState = {
+    ...gameState,
+    isPaused: gameStatus === 'paused'
+  };
+  
   return (
     <div className="game-container p-2 sm:p-4 max-w-6xl mx-auto">
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 justify-center items-center lg:items-start">
         <div className="game-main w-full lg:w-auto">
-          <GameBoard gameState={gameState} />
+          <GameBoard 
+            gameState={enhancedGameState} 
+            onInput={onInput}
+          />
           <GameControls 
             onInput={onInput} 
             gameOver={gameState.gameOver} 
             isPaused={gameStatus === 'paused'}
             onRestart={handleRestart}
+            useOverlayControls={true}
           />
         </div>
         

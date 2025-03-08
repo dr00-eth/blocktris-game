@@ -92,33 +92,4 @@ const BlockPreview = ({ nextBlock, className }) => {
   };
   
   return (
-    <div className={`block-preview bg-gray-800 p-4 rounded-md ${className || ''}`} ref={containerRef}>
-      <h3 className="text-lg font-medium mb-2 text-center">Next Block</h3>
-      <div className="flex justify-center">
-        <Stage
-          width={PREVIEW_SIZE * cellSize}
-          height={PREVIEW_SIZE * cellSize}
-          className="border border-gray-700 rounded-md overflow-hidden"
-        >
-          <Layer>
-            {renderPreviewGrid()}
-            {renderNextBlock()}
-          </Layer>
-        </Stage>
-      </div>
-      
-      {nextBlock && nextBlock.special && (
-        <div className="mt-2 text-center">
-          <span className="text-xs font-medium px-2 py-1 bg-purple-700 rounded-full">
-            {nextBlock.name} - Special
-          </span>
-          {nextBlock.effect && (
-            <p className="text-xs mt-1 text-gray-400">{nextBlock.description}</p>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default BlockPreview;
+    <div classN
