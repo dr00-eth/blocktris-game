@@ -24,3 +24,5 @@ body {
 
 /* Game specific styles */
 .game-board canvas {
+  display: block;
+}
