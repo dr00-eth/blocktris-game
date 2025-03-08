@@ -82,25 +82,71 @@ const Game = ({ wallet }) => {
     isPaused: gameStatus === 'paused'
   };
   
-  // Compact header for mobile
-  const renderCompactHeader = () => {
+  // Mobile game info overlay
+  const renderMobileGameInfo = () => {
     if (!isMobile) return null;
     
     return (
-      <div className="compact-header bg-gray-800 p-2 rounded-md mb-2 flex justify-between items-center">
-        <div className="score-display">
-          <div className="text-xs text-gray-400">Score</div>
-          <div className="text-xl font-bold text-green-400">{gameState.score}</div>
+      <div className="mobile-game-info bg-gray-800 bg-opacity-90 p-2 rounded-md mb-2 flex justify-between items-center">
+        <div className="flex-1 flex items-center justify-between">
+          <div className="score-display text-center">
+            <div className="text-xs text-gray-400">Score</div>
+            <div className="text-xl font-bold text-green-400">{gameState.score}</div>
+          </div>
+          
+          <div className="level-display text-center mx-2">
+            <div className="text-xs text-gray-400">Level</div>
+            <div className="text-lg font-bold text-yellow-400">{gameState.level || 1}</div>
+          </div>
+          
+          <div className="lines-display text-center">
+            <div className="text-xs text-gray-400">Lines</div>
+            <div className="text-lg font-bold text-blue-400">{gameState.linesCleared}</div>
+          </div>
         </div>
         
-        <div className="level-display mx-2">
-          <div className="text-xs text-gray-400">Level</div>
-          <div className="text-lg font-bold text-yellow-400">{gameState.level || 1}</div>
+        <div className="ml-2 flex-shrink-0">
+          <BlockPreview nextBlock={gameState.nextBlock} className="mobile-preview" />
         </div>
+      </div>
+    );
+  };
+  
+  // Mobile game over overlay
+  const renderMobileGameOver = () => {
+    if (!isMobile || !gameState.gameOver) return null;
+    
+    return (
+      <div className="mobile-game-over absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
+                      bg-gray-900 bg-opacity-90 p-4 rounded-md text-center z-10 w-4/5 max-w-xs">
+        <h3 className="text-2xl font-bold text-red-500 mb-2">GAME OVER</h3>
+        <p className="text-gray-300 mb-4">
+          Final Score: <span className="font-bold text-white">{gameState.score}</span>
+        </p>
         
-        <div className="lines-display">
-          <div className="text-xs text-gray-400">Lines</div>
-          <div className="text-lg font-bold text-blue-400">{gameState.linesCleared}</div>
+        <div className="flex flex-col gap-3">
+          <button 
+            className="w-full px-4 py-2 bg-green-600 rounded hover:bg-green-500 transition-colors"
+            onClick={handleRestart}
+          >
+            Play Again
+          </button>
+          
+          {canFinalizeGame ? (
+            <button 
+              className="w-full px-4 py-2 bg-blue-600 rounded hover:bg-blue-500 transition-colors"
+              onClick={() => finalizeGame()}
+            >
+              Mint as NFT
+            </button>
+          ) : (
+            <button 
+              className="w-full px-4 py-2 bg-purple-600 rounded hover:bg-purple-500 transition-colors"
+              onClick={wallet.connect}
+            >
+              Connect Wallet to Mint
+            </button>
+          )}
         </div>
       </div>
     );
@@ -108,14 +154,14 @@ const Game = ({ wallet }) => {
   
   return (
     <div className="game-container p-2 sm:p-4 max-w-6xl mx-auto">
-      {renderCompactHeader()}
-      
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 justify-center items-center lg:items-start">
-        <div className="game-main w-full lg:w-auto">
+        <div className="game-main w-full lg:w-auto relative">
+          {renderMobileGameInfo()}
           <GameBoard 
             gameState={enhancedGameState} 
             onInput={onInput}
           />
+          {renderMobileGameOver()}
           <GameControls 
             onInput={onInput} 
             gameOver={gameState.gameOver} 
@@ -170,42 +216,12 @@ const Game = ({ wallet }) => {
           </div>
         )}
         
-        {/* Game over and pause notifications for mobile */}
-        {isMobile && (
-          <>
-            {gameState.gameOver && (
-              <div className="mt-4 w-full">
-                {canFinalizeGame ? (
-                  <GameFinalize 
-                    gameState={gameState}
-                    finalizeGame={finalizeGame}
-                    wallet={wallet}
-                    disabled={!gameState.gameOver}
-                  />
-                ) : (
-                  <div className="bg-gray-800 p-4 rounded-md">
-                    <h3 className="text-xl font-bold text-yellow-400 mb-2">Game Over!</h3>
-                    <p className="text-gray-300 mb-4">
-                      Connect your wallet to mint this game as an NFT and save your score on the blockchain.
-                    </p>
-                    <button 
-                      className="w-full px-4 py-2 bg-green-600 rounded hover:bg-green-500 transition-colors"
-                      onClick={wallet.connect}
-                    >
-                      Connect Wallet to Mint
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {gameStatus === 'paused' && (
-              <div className="mt-4 w-full bg-gray-800 p-4 rounded-md text-center">
-                <h3 className="text-xl font-bold text-yellow-400 mb-2">Game Paused</h3>
-                <p className="text-gray-300">Press 'P' to resume</p>
-              </div>
-            )}
-          </>
+        {/* Game pause notification for mobile */}
+        {isMobile && gameStatus === 'paused' && (
+          <div className="mt-4 w-full bg-gray-800 p-4 rounded-md text-center">
+            <h3 className="text-xl font-bold text-yellow-400 mb-2">Game Paused</h3>
+            <p className="text-gray-300">Press 'P' to resume</p>
+          </div>
         )}
       </div>
     </div>

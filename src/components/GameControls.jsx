@@ -192,7 +192,7 @@ const GameControls = ({ onInput, gameOver, isPaused, onRestart, useOverlayContro
       
       {/* Game status and restart */}
       <div className="mt-4 text-center">
-        {gameOver && (
+        {gameOver && !useOverlayControls && (
           <button
             className="px-4 py-2 bg-green-600 hover:bg-green-500 rounded-md text-white font-medium"
             onClick={onRestart}

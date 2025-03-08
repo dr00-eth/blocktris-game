@@ -4,15 +4,23 @@ import { Stage, Layer, Rect } from 'react-konva';
 const DEFAULT_CELL_SIZE = 25;
 const PREVIEW_SIZE = 4;
 const MIN_CELL_SIZE = 15;
+const MOBILE_CELL_SIZE = 12; // Smaller cell size for mobile
 
 const BlockPreview = ({ nextBlock, className }) => {
   const containerRef = useRef(null);
   const [cellSize, setCellSize] = useState(DEFAULT_CELL_SIZE);
+  const isMobilePreview = className?.includes('mobile-preview');
   
   // Adjust cell size based on container width
   useEffect(() => {
     const updateDimensions = () => {
       if (!containerRef.current) return;
+      
+      // If it's a mobile preview, use a fixed smaller size
+      if (isMobilePreview) {
+        setCellSize(MOBILE_CELL_SIZE);
+        return;
+      }
       
       const containerWidth = containerRef.current.clientWidth;
       // Leave some padding for the container
@@ -29,7 +37,7 @@ const BlockPreview = ({ nextBlock, className }) => {
     // Update on resize
     window.addEventListener('resize', updateDimensions);
     return () => window.removeEventListener('resize', updateDimensions);
-  }, []);
+  }, [isMobilePreview]);
   
   // Render the next block
   const renderNextBlock = () => {
@@ -91,6 +99,25 @@ const BlockPreview = ({ nextBlock, className }) => {
     return grid;
   };
   
+  // For mobile preview, we use a more compact layout
+  if (isMobilePreview) {
+    return (
+      <div className={`block-preview-mobile ${className || ''}`} ref={containerRef}>
+        <Stage
+          width={PREVIEW_SIZE * cellSize}
+          height={PREVIEW_SIZE * cellSize}
+          className="border border-gray-700 rounded-md overflow-hidden"
+        >
+          <Layer>
+            {renderPreviewGrid()}
+            {renderNextBlock()}
+          </Layer>
+        </Stage>
+      </div>
+    );
+  }
+  
+  // Standard desktop preview
   return (
     <div className={`block-preview bg-gray-800 p-4 rounded-md ${className || ''}`} ref={containerRef}>
       <h3 className="text-lg font-medium mb-2 text-center">Next Block</h3>
