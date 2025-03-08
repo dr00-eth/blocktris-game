@@ -24,6 +24,28 @@
   position: relative;
 }
 
+/* Compact header styles */
+.compact-header {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.compact-header .score-display,
+.compact-header .level-display,
+.compact-header .lines-display {
+  text-align: center;
+}
+
+/* Hard drop highlight animation */
+@keyframes hardDropPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.9; }
+}
+
+.text-yellow-300.font-bold {
+  animation: hardDropPulse 2s infinite;
+  display: inline-block;
+}
+
 /* Touch hint overlay fade-in/fade-out */
 @keyframes fadeOut {
   0% { opacity: 0.8; }
@@ -63,7 +85,7 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .game-controls {
-    margin-top: 1rem;
+    margin-top: 0.5rem;
   }
   
   /* Make buttons larger on mobile for better touch targets */
@@ -75,6 +97,11 @@
   .game-board {
     max-width: 100%;
     margin: 0 auto;
+  }
+  
+  /* Reduce padding on mobile */
+  .game-container {
+    padding: 0.5rem !important;
   }
 }
 

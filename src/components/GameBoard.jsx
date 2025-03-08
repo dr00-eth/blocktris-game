@@ -5,6 +5,7 @@ const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
 const DEFAULT_CELL_SIZE = 30;
 const MIN_CELL_SIZE = 15;
+const PREVIEW_SIZE = 4;
 
 const GameBoard = ({ gameState, onInput }) => {
   const stageRef = useRef(null);
@@ -12,7 +13,7 @@ const GameBoard = ({ gameState, onInput }) => {
   const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
   const [cellSize, setCellSize] = useState(DEFAULT_CELL_SIZE);
   const [isMobile, setIsMobile] = useState(false);
-  const { board, currentBlock, currentBlockPosition, ghostPosition, gameOver, isPaused } = gameState;
+  const { board, currentBlock, currentBlockPosition, ghostPosition, gameOver, isPaused, nextBlock } = gameState;
   
   // Adjust cell size based on screen width
   useEffect(() => {
@@ -237,6 +238,99 @@ const GameBoard = ({ gameState, onInput }) => {
     return blocks;
   };
   
+  // Render next block preview for mobile overlay
+  const renderNextBlockPreview = () => {
+    if (!nextBlock || !isMobile) return null;
+    
+    const blocks = [];
+    const previewCellSize = Math.max(cellSize * 0.6, 10); // Smaller cells for preview
+    const { shape, color } = nextBlock;
+    
+    // Calculate offset to center the block in the preview
+    const width = shape[0].length;
+    const height = shape.length;
+    const offsetX = Math.floor((PREVIEW_SIZE - width) / 2);
+    const offsetY = Math.floor((PREVIEW_SIZE - height) / 2);
+    
+    // Background for preview
+    blocks.push(
+      <Rect
+        key="preview-bg"
+        x={0}
+        y={0}
+        width={PREVIEW_SIZE * previewCellSize}
+        height={PREVIEW_SIZE * previewCellSize}
+        fill="rgba(0, 0, 0, 0.5)"
+        cornerRadius={4}
+      />
+    );
+    
+    // Preview grid
+    for (let y = 0; y < PREVIEW_SIZE; y++) {
+      for (let x = 0; x < PREVIEW_SIZE; x++) {
+        blocks.push(
+          <Rect
+            key={`preview-grid-${x}-${y}`}
+            x={x * previewCellSize}
+            y={y * previewCellSize}
+            width={previewCellSize}
+            height={previewCellSize}
+            stroke="#333"
+            strokeWidth={1}
+            fill="#111"
+          />
+        );
+      }
+    }
+    
+    // Next block
+    for (let y = 0; y < shape.length; y++) {
+      for (let x = 0; x < shape[y].length; x++) {
+        if (shape[y][x]) {
+          blocks.push(
+            <Rect
+              key={`preview-block-${x}-${y}`}
+              x={(offsetX + x) * previewCellSize}
+              y={(offsetY + y) * previewCellSize}
+              width={previewCellSize}
+              height={previewCellSize}
+              fill={color}
+              stroke="#000"
+              strokeWidth={1}
+              cornerRadius={2}
+            />
+          );
+        }
+      }
+    }
+    
+    // Label
+    blocks.push(
+      <Text
+        key="preview-label"
+        x={PREVIEW_SIZE * previewCellSize / 2}
+        y={-previewCellSize / 2}
+        text="NEXT"
+        fontSize={previewCellSize * 0.8}
+        fontFamily="sans-serif"
+        fill="white"
+        align="center"
+        verticalAlign="middle"
+        width={PREVIEW_SIZE * previewCellSize}
+        offsetX={PREVIEW_SIZE * previewCellSize / 2}
+      />
+    );
+    
+    return (
+      <Group
+        x={BOARD_WIDTH * cellSize - (PREVIEW_SIZE * previewCellSize) - 10}
+        y={10}
+      >
+        {blocks}
+      </Group>
+    );
+  };
+  
   // Render game over overlay
   const renderGameOver = () => {
     if (!gameOver) return null;
@@ -299,8 +393,8 @@ const GameBoard = ({ gameState, onInput }) => {
         />
         <Text
           x={boardWidth / 2}
-          y={boardHeight / 2 - 20}
-          text="Swipe to move"
+          y={boardHeight / 2 - 30}
+          text="Swipe ← → to move"
           fontSize={14}
           fontFamily="sans-serif"
           fill="white"
@@ -311,11 +405,24 @@ const GameBoard = ({ gameState, onInput }) => {
         />
         <Text
           x={boardWidth / 2}
-          y={boardHeight / 2 + 10}
+          y={boardHeight / 2}
           text="Tap to rotate"
           fontSize={14}
           fontFamily="sans-serif"
           fill="white"
+          align="center"
+          verticalAlign="middle"
+          width={boardWidth}
+          offsetX={boardWidth / 2}
+        />
+        <Text
+          x={boardWidth / 2}
+          y={boardHeight / 2 + 30}
+          text="Swipe ↑ for HARD DROP"
+          fontSize={16}
+          fontFamily="sans-serif"
+          fontStyle="bold"
+          fill="#FFD700"
           align="center"
           verticalAlign="middle"
           width={boardWidth}
@@ -338,6 +445,7 @@ const GameBoard = ({ gameState, onInput }) => {
           <Group>{renderGhostBlock()}</Group>
           <Group>{renderPlacedBlocks()}</Group>
           <Group>{renderCurrentBlock()}</Group>
+          {renderNextBlockPreview()}
           {renderGameOver()}
           {isPaused ? null : renderTouchHint()}
         </Layer>
@@ -345,7 +453,7 @@ const GameBoard = ({ gameState, onInput }) => {
       {isMobile && !gameOver && !isPaused && (
         <div className="touch-controls-hint absolute top-2 left-0 right-0 text-center pointer-events-none">
           <div className="inline-block bg-black bg-opacity-50 text-white text-xs px-3 py-1 rounded-full">
-            Tap to rotate • Swipe to move
+            <span className="text-yellow-300 font-bold">↑ HARD DROP</span> • Tap to rotate
           </div>
         </div>
       )}

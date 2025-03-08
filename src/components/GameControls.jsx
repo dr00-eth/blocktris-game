@@ -111,7 +111,7 @@ const GameControls = ({ onInput, gameOver, isPaused, onRestart, useOverlayContro
   };
 
   return (
-    <div className="game-controls mt-4">
+    <div className="game-controls mt-2">
       {/* Swipe area for touch gestures - only show if not using overlay controls */}
       {touchControls && !useOverlayControls && (
         <div 
@@ -126,7 +126,7 @@ const GameControls = ({ onInput, gameOver, isPaused, onRestart, useOverlayContro
       <div className="touch-controls grid grid-cols-3 gap-2 max-w-xs mx-auto">
         <div className="col-start-2">
           <button
-            className="w-full h-14 bg-gray-700 hover:bg-gray-600 rounded-md flex items-center justify-center disabled:opacity-50"
+            className="w-full h-12 bg-gray-700 hover:bg-gray-600 rounded-md flex items-center justify-center disabled:opacity-50"
             onClick={() => handleButtonClick('rotate')}
             disabled={gameOver || isPaused}
             aria-label="Rotate"
@@ -139,7 +139,7 @@ const GameControls = ({ onInput, gameOver, isPaused, onRestart, useOverlayContro
         
         <div className="col-start-1 col-span-1 row-start-2">
           <button
-            className="w-full h-14 bg-gray-700 hover:bg-gray-600 rounded-md flex items-center justify-center disabled:opacity-50"
+            className="w-full h-12 bg-gray-700 hover:bg-gray-600 rounded-md flex items-center justify-center disabled:opacity-50"
             onClick={() => handleButtonClick('left')}
             disabled={gameOver || isPaused}
             aria-label="Move Left"
@@ -152,7 +152,7 @@ const GameControls = ({ onInput, gameOver, isPaused, onRestart, useOverlayContro
         
         <div className="col-start-2 col-span-1 row-start-2">
           <button
-            className="w-full h-14 bg-gray-700 hover:bg-gray-600 rounded-md flex items-center justify-center disabled:opacity-50"
+            className="w-full h-12 bg-gray-700 hover:bg-gray-600 rounded-md flex items-center justify-center disabled:opacity-50"
             onClick={() => handleButtonClick('down')}
             disabled={gameOver || isPaused}
             aria-label="Move Down"
@@ -165,7 +165,7 @@ const GameControls = ({ onInput, gameOver, isPaused, onRestart, useOverlayContro
         
         <div className="col-start-3 col-span-1 row-start-2">
           <button
-            className="w-full h-14 bg-gray-700 hover:bg-gray-600 rounded-md flex items-center justify-center disabled:opacity-50"
+            className="w-full h-12 bg-gray-700 hover:bg-gray-600 rounded-md flex items-center justify-center disabled:opacity-50"
             onClick={() => handleButtonClick('right')}
             disabled={gameOver || isPaused}
             aria-label="Move Right"
@@ -178,7 +178,7 @@ const GameControls = ({ onInput, gameOver, isPaused, onRestart, useOverlayContro
         
         <div className="col-start-2 col-span-1 row-start-3">
           <button
-            className="w-full h-14 bg-gray-700 hover:bg-gray-600 rounded-md flex items-center justify-center disabled:opacity-50"
+            className="w-full h-12 bg-yellow-600 hover:bg-yellow-500 rounded-md flex items-center justify-center disabled:opacity-50"
             onClick={() => handleButtonClick('hardDrop')}
             disabled={gameOver || isPaused}
             aria-label="Hard Drop"
@@ -208,26 +208,20 @@ const GameControls = ({ onInput, gameOver, isPaused, onRestart, useOverlayContro
         )}
       </div>
       
-      {/* Keyboard controls help */}
-      <div className="mt-6 text-sm text-gray-400">
-        <h3 className="font-medium mb-2">Controls:</h3>
-        <ul className="grid grid-cols-2 gap-1">
-          <li>← : Move Left</li>
-          <li>→ : Move Right</li>
-          <li>↓ : Move Down</li>
-          <li>↑ : Rotate</li>
-          <li>Space : Hard Drop</li>
-          <li>P : Pause/Resume</li>
-          {touchControls && (
-            <>
-              <li>Swipe Left/Right: Move</li>
-              <li>Swipe Down: Soft Drop</li>
-              <li>Swipe Up: Hard Drop</li>
-              {useOverlayControls && <li>Tap: Rotate</li>}
-            </>
-          )}
-        </ul>
-      </div>
+      {/* Keyboard controls help - only show on desktop */}
+      {!touchControls && (
+        <div className="mt-4 text-sm text-gray-400">
+          <h3 className="font-medium mb-2">Controls:</h3>
+          <ul className="grid grid-cols-2 gap-1">
+            <li>← : Move Left</li>
+            <li>→ : Move Right</li>
+            <li>↓ : Move Down</li>
+            <li>↑ : Rotate</li>
+            <li>Space : Hard Drop</li>
+            <li>P : Pause/Resume</li>
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
