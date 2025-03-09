@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import GameBoard from './GameBoard';
 import GameControls from './GameControls';
 import GameFinalize from './GameFinalize';
@@ -7,6 +7,9 @@ import { useGameEngine } from '../hooks/useGameEngine';
 const Game = ({ wallet }) => {
   const [gameStatus, setGameStatus] = useState('new'); // new, playing, paused, ended
   const [isMobile, setIsMobile] = useState(false);
+  const [showHelpIcon, setShowHelpIcon] = useState(true);
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const touchAreaRef = useRef(null);
   
   // Generate a random seed for testing without blockchain
   const [gameSeed] = useState(() => Math.floor(Math.random() * 1000000));
@@ -118,6 +121,64 @@ const Game = ({ wallet }) => {
       </div>
     );
   };
+
+  // Handle touch swipe controls
+  useEffect(() => {
+    if (!touchAreaRef.current || !isMobile || gameState.gameOver || gameStatus !== 'playing') return;
+    
+    const touchArea = touchAreaRef.current;
+    
+    const handleTouchStart = (e) => {
+      touchArea.dataset.startX = e.touches[0].clientX;
+      touchArea.dataset.startY = e.touches[0].clientY;
+    };
+    
+    const handleTouchEnd = (e) => {
+      const startX = parseInt(touchArea.dataset.startX || 0);
+      const startY = parseInt(touchArea.dataset.startY || 0);
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      
+      const deltaX = endX - startX;
+      const deltaY = endY - startY;
+      
+      // Minimum swipe distance
+      const minSwipeDistance = 30;
+      
+      // Horizontal swipe is larger
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        if (Math.abs(deltaX) > minSwipeDistance) {
+          if (deltaX > 0) {
+            onInput('right');
+          } else {
+            onInput('left');
+          }
+        }
+      } else {
+        // Vertical swipe is larger
+        if (Math.abs(deltaY) > minSwipeDistance) {
+          if (deltaY > 0) {
+            onInput('down');
+          } else {
+            onInput('hardDrop');
+          }
+        }
+      }
+    };
+    
+    touchArea.addEventListener('touchstart', handleTouchStart);
+    touchArea.addEventListener('touchend', handleTouchEnd);
+    
+    return () => {
+      touchArea.removeEventListener('touchstart', handleTouchStart);
+      touchArea.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isMobile, gameState.gameOver, gameStatus, onInput]);
+  
+  // Toggle help modal
+  const toggleHelpModal = () => {
+    setShowHelpModal(!showHelpModal);
+  };
   
   return (
     <div className="game-container p-2 sm:p-4 max-w-6xl mx-auto">
@@ -128,13 +189,57 @@ const Game = ({ wallet }) => {
             onInput={onInput}
           />
           {renderMobileGameOver()}
-          <GameControls 
-            onInput={onInput} 
-            gameOver={gameState.gameOver} 
-            isPaused={gameStatus === 'paused'}
-            onRestart={handleRestart}
-            useOverlayControls={true}
-          />
+          
+          {/* Add inline controls for mobile */}
+          {isMobile && !gameState.gameOver && (
+            <div className="game-controls-container">
+              <div 
+                ref={touchAreaRef}
+                className="touch-swipe-area-inline"
+              >
+                <p className="text-gray-400 text-sm">← → ↑ ↓</p>
+              </div>
+              
+              {showHelpIcon && (
+                <button 
+                  className="help-icon" 
+                  onClick={toggleHelpModal}
+                  aria-label="Game Controls Help"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          )}
+          
+          {/* Only show GameControls on non-mobile */}
+          {!isMobile && (
+            <GameControls 
+              onInput={onInput} 
+              gameOver={gameState.gameOver} 
+              isPaused={gameStatus === 'paused'}
+              onRestart={handleRestart}
+              useOverlayControls={true}
+            />
+          )}
+          
+          {/* Help Modal */}
+          {showHelpModal && (
+            <div className="help-modal">
+              <div className="help-modal-content">
+                <h3>Game Controls</h3>
+                <ul>
+                  <li><strong>Swipe Left/Right:</strong> Move piece</li>
+                  <li><strong>Tap:</strong> Rotate piece</li>
+                  <li><strong>Swipe Down:</strong> Soft drop</li>
+                  <li><strong>Swipe Up:</strong> Hard drop</li>
+                </ul>
+                <button onClick={toggleHelpModal}>Close</button>
+              </div>
+            </div>
+          )}
         </div>
         
         {/* Only show sidebar on desktop */}
@@ -175,6 +280,22 @@ const Game = ({ wallet }) => {
           <div className="mt-4 w-full bg-gray-800 p-4 rounded-md text-center">
             <h3 className="text-xl font-bold text-yellow-400 mb-2">Game Paused</h3>
             <p className="text-gray-300">Press 'P' to resume</p>
+          </div>
+        )}
+        
+        {/* Show promotional material only on mobile and only on game over */}
+        {isMobile && !wallet.isConnected && gameState.gameOver && (
+          <div className="mt-4 bg-gray-800 p-4 rounded-lg">
+            <h3 className="text-lg font-bold text-green-400 mb-2">Enhance Your Game Experience</h3>
+            <p className="text-gray-300 mb-3">
+              Connect your wallet to mint this game as an NFT and save your score on the blockchain.
+            </p>
+            <button 
+              className="w-full px-4 py-2 bg-green-600 rounded hover:bg-green-500 transition-colors"
+              onClick={wallet.connect}
+            >
+              Connect Wallet
+            </button>
           </div>
         )}
       </div>

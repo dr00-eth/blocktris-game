@@ -69,6 +69,13 @@
     }
   }
   
+  @keyframes notificationFade {
+    0% { opacity: 0; transform: translate(-50%, 5px); }
+    20% { opacity: 1; transform: translate(-50%, 0); }
+    80% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, -5px); }
+  }
+  
   /* Apply animations */
   .animate-pulse {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -82,7 +89,7 @@
   .game-board .touch-controls-hint {
     animation: fadeOut 3s forwards;
   }
-
+  
   /* Temporary controls hint */
   .controls-hint {
     position: absolute;
@@ -94,7 +101,7 @@
     border-radius: 10px;
     z-index: 100;
     text-align: center;
-    animation: fadeOut 3s forwards;
+    animation: fadeOut 5s forwards;
   }
   
   .swipe-hint-animation {
@@ -132,13 +139,13 @@
     touch-action: none; /* Prevent scrolling on mobile when using touch controls */
     position: relative;
   }
-
+  
   /* Improve overlay visibility */
-.game-info-overlay {
-  background-color: rgba(20, 30, 40, 0.85); /* Slightly more opaque */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* Subtle shadow */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
-}
+  .game-info-overlay {
+    background-color: rgba(20, 30, 40, 0.85); /* Slightly more opaque */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
+  }
   
   /* Compact header styles */
   .compact-header {
@@ -171,10 +178,17 @@
   /* -----------------------------
      TOUCH CONTROLS
      ----------------------------- */
+  /* UPDATED: Enhanced touch swipe area */
   .touch-swipe-area {
     position: relative;
     overflow: hidden;
     border: 1px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .touch-swipe-area::before {
@@ -182,8 +196,30 @@
     position: absolute;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+    background: linear-gradient(90deg, 
+      rgba(255,255,255,0) 0%, 
+      rgba(255,255,255,0.05) 45%, 
+      rgba(255,255,255,0.1) 50%, 
+      rgba(255,255,255,0.05) 55%, 
+      rgba(255,255,255,0) 100%);
     animation: swipeHint 2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  
+  .touch-swipe-area p {
+    position: relative;
+    z-index: 5;
+    font-weight: 500;
+    font-size: 14px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    pointer-events: none;
+  }
+  
+  /* Make the swipe area more visible on active touch */
+  .touch-swipe-area:active {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
   }
   
   /* Enhance button visibility */
@@ -191,8 +227,10 @@
     border-radius: 8px; /* Slightly rounded corners */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Shadow for depth */
     transition: all 0.15s ease; /* Smooth transitions */
+    position: relative;
+    overflow: hidden;
   }
-
+  
   /* Active state for buttons */
   .touch-controls button:active {
     transform: translateY(2px) scale(0.97);
@@ -215,13 +253,13 @@
   .touch-controls button:active::after {
     opacity: 1;
   }
-
+  
   /* Hard drop button enhancements */
   .touch-controls .hard-drop-button {
     background-color: #e6a100; /* More distinctive color */
     box-shadow: 0 3px 6px rgba(230, 161, 0, 0.4);
   }
-    
+  
   /* -----------------------------
      RESPONSIVE STYLES
      ----------------------------- */
@@ -233,6 +271,11 @@
     /* Make buttons larger on mobile for better touch targets */
     button {
       min-height: 44px; /* Apple's recommended minimum touch target size */
+    }
+
+    /* Hide the bottom controls completely */
+    .touch-controls {
+      display: none !important; /* Extra importance to override any other styles */
     }
     
     .touch-controls button {
@@ -252,12 +295,12 @@
       max-width: 100%;
       margin: 0 auto;
       max-width: 100vw;
-      max-height: 80vh;
+      max-height: 75vh;
     }
     
     /* Ensure game board is centered */
     .game-board canvas {
-      max-height: 70vh;
+      max-height: 75vh;
       object-fit: contain;
       margin: 0 auto;
       display: block !important;
@@ -265,8 +308,16 @@
     
     /* Reduce padding on mobile */
     .game-container {
-      padding: 0.5rem !important;
-      padding-bottom: 100px !important; /* Fix bottom padding to ensure controls don't get cut off */
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 120px); /* Account for header and footer */
+      justify-content: space-between;
+      padding-bottom: 10px !important; /* Reduce excessive padding */
+    }
+
+    .game-controls-container {
+      margin-top: 10px;
+      margin-bottom: 10px;
     }
     
     /* Ensure the game board is visible without scrolling on most devices */
@@ -317,130 +368,175 @@
       max-width: 40vw;
     }
   }
-
+  
+  /* -----------------------------
+     HELP AND NOTIFICATIONS
+     ----------------------------- */
   /* Help icon styles */
-.help-icon {
-  position: absolute;
-  bottom: 15px;
-  right: 15px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  opacity: 0.7;
-  transition: opacity 0.2s, transform 0.2s;
-}
+  .help-icon {
+    /* Remove the absolute positioning styles */
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    opacity: 0.7;
+    transition: opacity 0.2s, transform 0.2s;
+  }
 
-.help-icon:hover,
-.help-icon:focus {
-  opacity: 1;
-}
+  .help-icon-absolute {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+  }
+  
+  .help-icon:hover,
+  .help-icon:focus {
+    opacity: 1;
+  }
+  
+  .help-icon:active {
+    transform: scale(0.95);
+  }
+  
+  /* Help modal styles */
+  .help-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .help-modal-content {
+    background-color: #1f2937;
+    border-radius: 10px;
+    padding: 20px;
+    width: 90%;
+    max-width: 300px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  .help-modal-content h3 {
+    color: #4ade80;
+    font-size: 18px;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  
+  .help-modal-content ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 20px;
+  }
+  
+  .help-modal-content li {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f3f4f6;
+  }
+  
+  .help-modal-content li:last-child {
+    border-bottom: none;
+  }
+  
+  .help-modal-content li strong {
+    color: #38bdf8;
+  }
+  
+  .help-modal-content button {
+    background-color: #4ade80;
+    color: #1f2937;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+  }
+  
+  .help-modal-content button:hover {
+    background-color: #22c55e;
+  }
+  
+  .help-modal-content button:active {
+    transform: translateY(1px);
+  }
+  
+  /* Hard drop notification */
+  .hard-drop-notification {
+    position: absolute;
+    top: 60px; /* Below the game info overlay */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fbbf24; /* Yellow */
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    z-index: 20;
+    pointer-events: none;
+    animation: notificationFade 1s forwards;
+  }
 
-.help-icon:active {
-  transform: scale(0.95);
-}
+  /* Game controls container for inline layout */
+  .game-controls-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 0 15px;
+    clear: both;
+    position: relative; /* Ensure proper stacking context */
+    z-index: 5;
+  }
 
-/* Help modal styles */
-.help-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.help-modal-content {
-  background-color: #1f2937;
-  border-radius: 10px;
-  padding: 20px;
-  width: 90%;
-  max-width: 300px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.help-modal-content h3 {
-  color: #4ade80;
-  font-size: 18px;
-  margin-bottom: 15px;
-  text-align: center;
-}
-
-.help-modal-content ul {
-  list-style: none;
-  padding: 0;
-  margin-bottom: 20px;
-}
-
-.help-modal-content li {
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  color: #f3f4f6;
-}
-
-.help-modal-content li:last-child {
-  border-bottom: none;
-}
-
-.help-modal-content li strong {
-  color: #38bdf8;
-}
-
-.help-modal-content button {
-  background-color: #4ade80;
-  color: #1f2937;
-  border: none;
-  padding: 8px 20px;
-  border-radius: 5px;
-  font-weight: bold;
-  cursor: pointer;
-  width: 100%;
-}
-
-.help-modal-content button:hover {
-  background-color: #22c55e;
-}
-
-.help-modal-content button:active {
-  transform: translateY(1px);
-}
-
-/* Controls hint styles */
-.controls-hint {
-  animation: fadeOut 5s forwards;
-}
-
-/* Hard drop notification */
-.hard-drop-notification {
-  position: absolute;
-  top: 60px; /* Below the game info overlay */
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: rgba(0, 0, 0, 0.7);
-  color: #fbbf24; /* Yellow */
-  font-weight: bold;
-  padding: 6px 12px;
+/* Inline touch swipe area */
+.touch-swipe-area-inline {
+  position: relative;
+  overflow: hidden;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
   border-radius: 20px;
-  font-size: 14px;
-  z-index: 20;
-  pointer-events: none;
-  animation: notificationFade 1s forwards;
+  height: 40px;
+  flex-grow: 1;
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.3);
 }
 
-@keyframes notificationFade {
-  0% { opacity: 0; transform: translate(-50%, 5px); }
-  20% { opacity: 1; transform: translate(-50%, 0); }
-  80% { opacity: 1; transform: translate(-50%, 0); }
-  100% { opacity: 0; transform: translate(-50%, -5px); }
+.touch-swipe-area-inline::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    rgba(255,255,255,0) 0%, 
+    rgba(255,255,255,0.05) 45%, 
+    rgba(255,255,255,0.1) 50%, 
+    rgba(255,255,255,0.05) 55%, 
+    rgba(255,255,255,0) 100%);
+  animation: swipeHint 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.touch-swipe-area-inline p {
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.6);
 }
