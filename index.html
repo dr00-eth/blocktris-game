@@ -1,13 +1,79 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    
+    <!-- Primary Meta Tags -->
+    <title>BlockTris - Blockchain-Enhanced Tetris Game</title>
+    <meta name="title" content="BlockTris - Blockchain-Enhanced Tetris Game">
+    <meta name="description" content="Play BlockTris, a blockchain-enhanced Tetris game built on the Base network. Create games as NFTs, play with special blocks, and trade completed game boards.">
+    <meta name="keywords" content="blockchain game, tetris, NFT game, Base network, web3 game, crypto gaming">
+    <meta name="author" content="BlockTris Team">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>BlockTris</title>
+    <meta name="theme-color" content="#3498db">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon-180x180.png" />
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://blocktris.xyz/">
+    <meta property="og:title" content="BlockTris - Blockchain-Enhanced Tetris Game">
+    <meta property="og:description" content="Play BlockTris, a blockchain-enhanced Tetris game built on the Base network. Create games as NFTs, play with special blocks, and trade completed game boards.">
+    <meta property="og:image" content="https://blocktris.xyz/blocktris-social.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://blocktris.xyz/">
+    <meta property="twitter:title" content="BlockTris - Blockchain-Enhanced Tetris Game">
+    <meta property="twitter:description" content="Play BlockTris, a blockchain-enhanced Tetris game built on the Base network. Create games as NFTs, play with special blocks, and trade completed game boards.">
+    <meta property="twitter:image" content="https://blocktris.xyz/blocktris-social.png">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://blocktris.xyz/" />
+    
+    <!-- Preconnect to important domains -->
+    <link rel="preconnect" href="https://mainnet.base.org" />
+    
+    <!-- Structured Data / JSON-LD -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "BlockTris",
+        "description": "A blockchain-enhanced Tetris game built on the Base network where players can create games as NFTs, play with special blocks, and trade completed game boards.",
+        "url": "https://blocktris.xyz",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "author": {
+          "@type": "Organization",
+          "name": "BlockTris Team"
+        }
+      }
+    </script>
+    
+    <!-- Service Worker Registration -->
+    <script src="/register-sw.js"></script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- No-JS Fallback -->
+    <noscript>
+      <div style="padding: 2rem; text-align: center; font-family: sans-serif;">
+        <h1>JavaScript Required</h1>
+        <p>BlockTris requires JavaScript to run. Please enable JavaScript in your browser settings and reload the page.</p>
+      </div>
+    </noscript>
   </body>
 </html>

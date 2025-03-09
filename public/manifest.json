@@ -1,0 +1,24 @@
+{
+  "name": "BlockTris",
+  "short_name": "BlockTris",
+  "description": "A blockchain-enhanced Tetris game built on the Base network where players can create games as NFTs",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#34495e",
+  "theme_color": "#3498db",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+} 
