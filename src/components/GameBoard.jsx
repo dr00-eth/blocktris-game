@@ -14,7 +14,7 @@ const GameBoard = ({ gameState, onInput }) => {
   const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
   const [cellSize, setCellSize] = useState(DEFAULT_CELL_SIZE);
   const [isMobile, setIsMobile] = useState(false);
-  const [touchControls, setTouchControls] = useState(false); // Control visibility of the touch area
+  const [touchControls, setTouchControls] = useState(false);
 
   // Control the visibility of the help/controls
   const [showControlsHint, setShowControlsHint] = useState(true);
@@ -23,16 +23,23 @@ const GameBoard = ({ gameState, onInput }) => {
 
   const { board, currentBlock, currentBlockPosition, ghostPosition, gameOver, isPaused } = gameState;
 
-  // Adjust cell size based on screen width
+  // Adjust cell size based on screen size and ensure proper centering
   useEffect(() => {
     const updateDimensions = () => {
       if (!containerRef.current) return;
 
+      // Get container width
       const containerWidth = containerRef.current.clientWidth;
-      const maxBoardWidth = Math.min(containerWidth, 600); // Cap at 600px max width
+      // Use 75% of viewport height for better vertical usage
+      const containerHeight = window.innerHeight * 0.75;
 
-      // Calculate cell size based on available width
-      const newCellSize = Math.max(Math.floor(maxBoardWidth / BOARD_WIDTH), MIN_CELL_SIZE);
+      // Calculate cell size based on both width and height constraints
+      const cellSizeFromWidth = Math.floor(containerWidth / BOARD_WIDTH);
+      const cellSizeFromHeight = Math.floor(containerHeight / BOARD_HEIGHT);
+
+      // Use the smaller of the two to ensure board fits
+      const newCellSize = Math.max(Math.min(cellSizeFromWidth, cellSizeFromHeight), MIN_CELL_SIZE);
+
       setCellSize(newCellSize);
     };
 
@@ -196,7 +203,7 @@ const GameBoard = ({ gameState, onInput }) => {
   // Function to show hard drop notification temporarily
   const showHardDropNotification = () => {
     const notification = document.createElement('div');
-    notification.className = 'hard-drop-notification';
+    notification.className = 'hard-drop-notification bg-yellow-600 text-white font-bold px-4 py-2 rounded-full shadow-lg';
     notification.textContent = '↑ HARD DROP!';
 
     if (containerRef.current) {
@@ -379,147 +386,154 @@ const GameBoard = ({ gameState, onInput }) => {
     );
   };
 
-  // Render touch controls hint overlay (only at beginning)
+  // Render touch controls hint overlay
   const renderTouchHint = () => {
     if (!isMobile || gameOver || !showControlsHint) return null;
 
-    const boardWidth = BOARD_WIDTH * cellSize;
-    const boardHeight = BOARD_HEIGHT * cellSize;
-
     return (
-      <Group className="controls-hint">
-        <Rect
-          x={boardWidth / 2 - 140}
-          y={boardHeight / 2 - 70}
-          width={280}
-          height={140}
-          fill="rgba(0, 0, 0, 0.7)"
-          cornerRadius={10}
-        />
-        <Text
-          x={boardWidth / 2}
-          y={boardHeight / 2 - 50}
-          text="How to Play:"
-          fontSize={16}
-          fontFamily="sans-serif"
-          fontStyle="bold"
-          fill="white"
-          align="center"
-          verticalAlign="middle"
-          width={boardWidth}
-          offsetX={boardWidth / 2}
-        />
-        <Text
-          x={boardWidth / 2}
-          y={boardHeight / 2 - 20}
-          text="Swipe ← → to move"
-          fontSize={14}
-          fontFamily="sans-serif"
-          fill="white"
-          align="center"
-          verticalAlign="middle"
-          width={boardWidth}
-          offsetX={boardWidth / 2}
-        />
-        <Text
-          x={boardWidth / 2}
-          y={boardHeight / 2 + 10}
-          text="Tap to rotate"
-          fontSize={14}
-          fontFamily="sans-serif"
-          fill="white"
-          align="center"
-          verticalAlign="middle"
-          width={boardWidth}
-          offsetX={boardWidth / 2}
-        />
-        <Text
-          x={boardWidth / 2}
-          y={boardHeight / 2 + 40}
-          text="Swipe ↑ for HARD DROP"
-          fontSize={16}
-          fontFamily="sans-serif"
-          fontStyle="bold"
-          fill="#FFD700"
-          align="center"
-          verticalAlign="middle"
-          width={boardWidth}
-          offsetX={boardWidth / 2}
-        />
-      </Group>
+      <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-70">
+        <div className="bg-gray-800 p-6 rounded-lg max-w-sm w-5/6 text-center">
+          <h3 className="text-xl font-bold text-green-400 mb-4">How to Play</h3>
+
+          <div className="space-y-4 mb-6">
+            <div className="flex flex-col items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+              <p className="text-white">Swipe left/right to move</p>
+            </div>
+
+            <div className="flex flex-col items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-white">Tap screen to rotate</p>
+            </div>
+
+            <div className="flex flex-col items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-yellow-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 11l7-7 7 7M5 19l7-7 7 7" />
+              </svg>
+              <p className="text-white font-bold">Swipe UP for HARD DROP</p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              setShowControlsHint(false);
+              setShowHelpIcon(true);
+            }}
+            className="bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+          >
+            Got it!
+          </button>
+        </div>
+      </div>
     );
   };
 
+  // Calculate the width and height of the stage
+  const stageWidth = BOARD_WIDTH * cellSize;
+  const stageHeight = BOARD_HEIGHT * cellSize;
+
   return (
-    <div className="game-container">
-      <div className="game-board w-full relative" ref={containerRef}>
-        <Stage
-          ref={stageRef}
-          width={BOARD_WIDTH * cellSize}
-          height={BOARD_HEIGHT * cellSize}
-          className="border border-gray-700 rounded-md overflow-hidden shadow-lg mx-auto"
-        >
-          <Layer>
-            <Group>{renderGrid()}</Group>
-            <Group>{renderGhostBlock()}</Group>
-            <Group>{renderPlacedBlocks()}</Group>
-            <Group>{renderCurrentBlock()}</Group>
+    <div className="game-container flex flex-col items-center w-full">
+      {/* Make sure game-board div takes full width and centers content */}
+      <div className="game-board w-full flex flex-col items-center" ref={containerRef}>
+        <div className="flex justify-center w-full">
+          <Stage
+            ref={stageRef}
+            width={stageWidth}
+            height={stageHeight}
+            className="border border-gray-700 rounded-md overflow-hidden shadow-lg"
+          >
+            <Layer>
+              <Group>{renderGrid()}</Group>
+              <Group>{renderGhostBlock()}</Group>
+              <Group>{renderPlacedBlocks()}</Group>
+              <Group>{renderCurrentBlock()}</Group>
 
-            {/* Game Info Overlay */}
-            <GameInfoOverlay
-              gameState={gameState}
-              cellSize={cellSize}
-              boardWidth={BOARD_WIDTH}
-            />
+              {/* Game Info Overlay */}
+              <GameInfoOverlay
+                gameState={gameState}
+                cellSize={cellSize}
+                boardWidth={BOARD_WIDTH}
+              />
 
-            {renderGameOver()}
-            {renderTouchHint()}
-          </Layer>
-        </Stage>
-        {/* Replace the existing code after </Stage> with this */}
-        <div className="game-controls-container">
-          {/* Touch swipe area - inline */}
+              {renderGameOver()}
+            </Layer>
+          </Stage>
+        </div>
+
+        {/* Improved Game Controls Container - keep centered with the board */}
+        <div className="game-controls-container flex items-center justify-between mt-4 mb-4 w-full max-w-xs px-2">
+          {/* Touch swipe area - with proper width constraints */}
           {touchControls && !gameOver && !isPaused && (
-            <div
-              ref={touchAreaRef}
-              className="touch-swipe-area-inline"
-            >
-              <p className="text-gray-400 text-sm">← → ↑ ↓</p>
-            </div>
-          )}
+            <>
+              <div
+                ref={touchAreaRef}
+                className="touch-swipe-area-inline relative overflow-hidden border border-dashed border-gray-600 rounded-full h-12 w-4/5 flex items-center justify-center bg-black bg-opacity-30"
+              >
+                <div className="absolute inset-0 swipe-hint-animation"></div>
+                <div className="flex items-center justify-center space-x-4 z-10">
+                  <span className="text-gray-400">←</span>
+                  <span className="text-gray-400 font-bold">SWIPE</span>
+                  <span className="text-gray-400">→</span>
+                </div>
+              </div>
 
-          {/* Help Icon */}
-          {showHelpIcon && isMobile && !gameOver && (
-            <button
-              className="help-icon"
-              onClick={toggleHelpModal}
-              aria-label="Game Controls Help"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </button>
+              {/* Help Icon with margin */}
+              {showHelpIcon && (
+                <button
+                  className="help-icon bg-gray-700 hover:bg-gray-600 rounded-full w-12 h-12 flex items-center justify-center ml-4"
+                  onClick={toggleHelpModal}
+                  aria-label="Game Controls Help"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </button>
+              )}
+            </>
           )}
         </div>
 
-        {/* Help Modal with complete touch controls instructions */}
+        {/* Improved Help Modal */}
         {showHelpModal && (
-          <div className="help-modal">
-            <div className="help-modal-content">
-              <h3>Game Controls</h3>
-              <ul>
-                <li><strong>Swipe Left/Right:</strong> Move piece</li>
-                <li><strong>Tap:</strong> Rotate piece</li>
-                <li><strong>Swipe Down:</strong> Soft drop</li>
-                <li><strong>Swipe Up:</strong> Hard drop</li>
+          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+            <div className="bg-gray-800 rounded-lg p-5 shadow-lg max-w-xs w-full mx-4">
+              <h3 className="text-xl text-green-400 font-bold mb-4 text-center">Game Controls</h3>
+              <ul className="space-y-3 mb-5">
+                <li className="flex justify-between items-center border-b border-gray-700 pb-2">
+                  <span className="text-gray-300">Swipe Left/Right</span>
+                  <span className="font-bold text-white">Move piece</span>
+                </li>
+                <li className="flex justify-between items-center border-b border-gray-700 pb-2">
+                  <span className="text-gray-300">Tap</span>
+                  <span className="font-bold text-white">Rotate piece</span>
+                </li>
+                <li className="flex justify-between items-center border-b border-gray-700 pb-2">
+                  <span className="text-gray-300">Swipe Down</span>
+                  <span className="font-bold text-white">Soft drop</span>
+                </li>
+                <li className="flex justify-between items-center">
+                  <span className="text-gray-300">Swipe Up</span>
+                  <span className="font-bold text-white">Hard drop</span>
+                </li>
               </ul>
-              <button onClick={toggleHelpModal}>Close</button>
+              <button
+                onClick={toggleHelpModal}
+                className="w-full py-3 bg-green-600 hover:bg-green-500 transition-colors rounded-md font-bold text-white"
+              >
+                Got it
+              </button>
             </div>
           </div>
         )}
-
-        {/* Hard Drop Notification is handled by CSS/JS */}
       </div>
+
+      {/* Render the touch hint overlay */}
+      {renderTouchHint()}
     </div>
   );
 };

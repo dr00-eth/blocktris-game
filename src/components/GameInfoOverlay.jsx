@@ -4,16 +4,18 @@ import { Stage, Layer, Rect, Text, Group } from 'react-konva';
 const GameInfoOverlay = ({ gameState, cellSize, boardWidth }) => {
   const { score, level, linesCleared, nextBlock } = gameState;
   
-  // Calculate dimensions
-  const overlayHeight = cellSize * 4; // 4 cells high for the overlay
+  // Calculate dimensions - more responsive
+  const overlayHeight = Math.max(cellSize * 3, 60); // Min height of 60px
   const overlayWidth = boardWidth * cellSize;
-  const textSize = Math.max(14, Math.min(16, cellSize * 0.5));
-  const valueSize = Math.max(18, Math.min(22, cellSize * 0.7));
+  
+  // More responsive text sizing based on cell size
+  const textSize = Math.max(12, Math.min(14, cellSize * 0.45));
+  const valueSize = Math.max(16, Math.min(18, cellSize * 0.6));
   
   // Calculate next block display position and size
-  const blockPreviewSize = cellSize * 3;
+  const blockPreviewSize = Math.max(cellSize * 2.5, 50); // Min size of 50px
   const blockPreviewX = overlayWidth - blockPreviewSize - cellSize * 0.5;
-  const blockPreviewY = cellSize * 0.5;
+  const blockPreviewY = (overlayHeight - blockPreviewSize) / 2;
   
   // Render the next block
   const renderNextBlock = () => {
@@ -90,7 +92,7 @@ const GameInfoOverlay = ({ gameState, cellSize, boardWidth }) => {
         x={blockPreviewSize / 2}
         y={-previewCellSize / 2}
         text="NEXT"
-        fontSize={previewCellSize * 0.9}
+        fontSize={Math.max(12, previewCellSize * 0.8)}
         fontFamily="sans-serif"
         fontStyle="bold"
         fill="white"
@@ -107,6 +109,11 @@ const GameInfoOverlay = ({ gameState, cellSize, boardWidth }) => {
       </Group>
     );
   };
+  
+  // Responsive spacing calculations
+  const scorePosX = cellSize * 0.8;
+  const levelPosX = Math.min(cellSize * 4, overlayWidth * 0.3);
+  const linesPosX = Math.min(cellSize * 7, overlayWidth * 0.6);
   
   return (
     <Group className="game-info-overlay">
@@ -127,7 +134,7 @@ const GameInfoOverlay = ({ gameState, cellSize, boardWidth }) => {
       />
       
       {/* Score with improved styling */}
-      <Group x={cellSize} y={cellSize * 0.5}>
+      <Group x={scorePosX} y={(overlayHeight - valueSize - textSize) / 2}>
         <Text
           text="SCORE"
           fontSize={textSize}
@@ -150,7 +157,7 @@ const GameInfoOverlay = ({ gameState, cellSize, boardWidth }) => {
       </Group>
       
       {/* Level with improved styling */}
-      <Group x={cellSize * 4} y={cellSize * 0.5}>
+      <Group x={levelPosX} y={(overlayHeight - valueSize - textSize) / 2}>
         <Text
           text="LEVEL"
           fontSize={textSize}
@@ -173,7 +180,7 @@ const GameInfoOverlay = ({ gameState, cellSize, boardWidth }) => {
       </Group>
       
       {/* Lines with improved styling */}
-      <Group x={cellSize * 7} y={cellSize * 0.5}>
+      <Group x={linesPosX} y={(overlayHeight - valueSize - textSize) / 2}>
         <Text
           text="LINES"
           fontSize={textSize}
