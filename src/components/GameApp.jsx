@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import WalletConnect from './WalletConnect';
+import Navigation from './Navigation';
 import Game from './Game';
 import Marketplace from './Marketplace';
 import useWallet from '../hooks/useWallet';
@@ -17,32 +16,12 @@ function GameApp() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <header className="bg-gray-800 p-4 shadow-md">
-        <div className="container mx-auto flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold text-green-400">BlockTris</Link>
-          <div className="flex space-x-4">
-            <button 
-              className={`px-4 py-2 rounded ${activeTab === 'game' ? 'bg-green-600' : 'bg-gray-700 hover:bg-gray-600'}`}
-              onClick={() => setActiveTab('game')}
-            >
-              Game
-            </button>
-            <button 
-              className={`px-4 py-2 rounded ${activeTab === 'marketplace' ? 'bg-green-600' : 'bg-gray-700 hover:bg-gray-600'}`}
-              onClick={() => {
-                if (!wallet.isConnected) {
-                  toggleWalletPrompt();
-                } else {
-                  setActiveTab('marketplace');
-                }
-              }}
-            >
-              Marketplace
-            </button>
-          </div>
-          <WalletConnect wallet={wallet} />
-        </div>
-      </header>
+      <Navigation 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        wallet={wallet} 
+        toggleWalletPrompt={toggleWalletPrompt} 
+      />
 
       <main className="container mx-auto p-4">
         {/* Wallet Prompt Modal */}
@@ -126,7 +105,7 @@ function GameApp() {
         <div className="container mx-auto text-center text-gray-400">
           <p>BlockTris - A blockchain-enhanced Tetris game on Base</p>
           <p className="text-sm mt-1">
-            <Link to="/" className="text-green-400 hover:text-green-300">Home</Link> | 
+            <a href="/" className="text-green-400 hover:text-green-300">Home</a> | 
             <a href="https://github.com/yourusername/blocktris" className="text-green-400 hover:text-green-300 ml-2">GitHub</a>
           </p>
         </div>
@@ -135,4 +114,4 @@ function GameApp() {
   );
 }
 
-export default GameApp; 
+export default GameApp;

@@ -1,11 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Stage, Layer, Rect, Group, Text } from 'react-konva';
+import GameInfoOverlay from './GameInfoOverlay';
 
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
 const DEFAULT_CELL_SIZE = 30;
 const MIN_CELL_SIZE = 15;
-const PREVIEW_SIZE = 4;
 
 const GameBoard = ({ gameState, onInput }) => {
   const stageRef = useRef(null);
@@ -13,7 +13,13 @@ const GameBoard = ({ gameState, onInput }) => {
   const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
   const [cellSize, setCellSize] = useState(DEFAULT_CELL_SIZE);
   const [isMobile, setIsMobile] = useState(false);
-  const { board, currentBlock, currentBlockPosition, ghostPosition, gameOver, isPaused, nextBlock } = gameState;
+  
+  // Control the visibility of the help/controls
+  const [showControlsHint, setShowControlsHint] = useState(true);
+  const [showHelpIcon, setShowHelpIcon] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  
+  const { board, currentBlock, currentBlockPosition, ghostPosition, gameOver, isPaused } = gameState;
   
   // Adjust cell size based on screen width
   useEffect(() => {
@@ -45,6 +51,20 @@ const GameBoard = ({ gameState, onInput }) => {
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
   
+  // Show controls hint briefly at the start
+  useEffect(() => {
+    // Show the controls hint for 5 seconds when the game starts
+    if (showControlsHint) {
+      const timer = setTimeout(() => {
+        setShowControlsHint(false);
+        // After hiding controls, show the help icon
+        setShowHelpIcon(true);
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showControlsHint]);
+  
   // Handle touch controls
   useEffect(() => {
     if (!containerRef.current || !onInput || gameOver || !isMobile) return;
@@ -65,6 +85,12 @@ const GameBoard = ({ gameState, onInput }) => {
     const handleTouchEnd = (e) => {
       if (gameOver || isPaused) return;
       if (e.changedTouches.length === 0) return;
+      
+      // Hide controls hint after first interaction
+      if (showControlsHint) {
+        setShowControlsHint(false);
+        setShowHelpIcon(true);
+      }
       
       const touch = e.changedTouches[0];
       const deltaX = touch.clientX - touchStartRef.current.x;
@@ -104,6 +130,9 @@ const GameBoard = ({ gameState, onInput }) => {
             onInput('down');
           } else {
             onInput('hardDrop');
+            
+            // Show temporary hard drop notification
+            showHardDropNotification();
           }
         }
       }
@@ -116,7 +145,30 @@ const GameBoard = ({ gameState, onInput }) => {
       container.removeEventListener('touchstart', handleTouchStart);
       container.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [onInput, gameOver, isPaused, isMobile]);
+  }, [onInput, gameOver, isPaused, isMobile, showControlsHint]);
+  
+  // Function to show hard drop notification temporarily
+  const showHardDropNotification = () => {
+    const notification = document.createElement('div');
+    notification.className = 'hard-drop-notification';
+    notification.textContent = '↑ HARD DROP!';
+    
+    if (containerRef.current) {
+      containerRef.current.appendChild(notification);
+      
+      // Remove after animation
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 1000);
+    }
+  };
+  
+  // Toggle help modal
+  const toggleHelpModal = () => {
+    setShowHelpModal(!showHelpModal);
+  };
   
   // Draw the game board grid
   const renderGrid = () => {
@@ -238,99 +290,6 @@ const GameBoard = ({ gameState, onInput }) => {
     return blocks;
   };
   
-  // Render next block preview for mobile overlay
-  const renderNextBlockPreview = () => {
-    if (!nextBlock || !isMobile) return null;
-    
-    const blocks = [];
-    const previewCellSize = Math.max(cellSize * 0.6, 10); // Smaller cells for preview
-    const { shape, color } = nextBlock;
-    
-    // Calculate offset to center the block in the preview
-    const width = shape[0].length;
-    const height = shape.length;
-    const offsetX = Math.floor((PREVIEW_SIZE - width) / 2);
-    const offsetY = Math.floor((PREVIEW_SIZE - height) / 2);
-    
-    // Background for preview
-    blocks.push(
-      <Rect
-        key="preview-bg"
-        x={0}
-        y={0}
-        width={PREVIEW_SIZE * previewCellSize}
-        height={PREVIEW_SIZE * previewCellSize}
-        fill="rgba(0, 0, 0, 0.5)"
-        cornerRadius={4}
-      />
-    );
-    
-    // Preview grid
-    for (let y = 0; y < PREVIEW_SIZE; y++) {
-      for (let x = 0; x < PREVIEW_SIZE; x++) {
-        blocks.push(
-          <Rect
-            key={`preview-grid-${x}-${y}`}
-            x={x * previewCellSize}
-            y={y * previewCellSize}
-            width={previewCellSize}
-            height={previewCellSize}
-            stroke="#333"
-            strokeWidth={1}
-            fill="#111"
-          />
-        );
-      }
-    }
-    
-    // Next block
-    for (let y = 0; y < shape.length; y++) {
-      for (let x = 0; x < shape[y].length; x++) {
-        if (shape[y][x]) {
-          blocks.push(
-            <Rect
-              key={`preview-block-${x}-${y}`}
-              x={(offsetX + x) * previewCellSize}
-              y={(offsetY + y) * previewCellSize}
-              width={previewCellSize}
-              height={previewCellSize}
-              fill={color}
-              stroke="#000"
-              strokeWidth={1}
-              cornerRadius={2}
-            />
-          );
-        }
-      }
-    }
-    
-    // Label
-    blocks.push(
-      <Text
-        key="preview-label"
-        x={PREVIEW_SIZE * previewCellSize / 2}
-        y={-previewCellSize / 2}
-        text="NEXT"
-        fontSize={previewCellSize * 0.8}
-        fontFamily="sans-serif"
-        fill="white"
-        align="center"
-        verticalAlign="middle"
-        width={PREVIEW_SIZE * previewCellSize}
-        offsetX={PREVIEW_SIZE * previewCellSize / 2}
-      />
-    );
-    
-    return (
-      <Group
-        x={BOARD_WIDTH * cellSize - (PREVIEW_SIZE * previewCellSize) - 10}
-        y={10}
-      >
-        {blocks}
-      </Group>
-    );
-  };
-  
   // Render game over overlay
   const renderGameOver = () => {
     if (!gameOver) return null;
@@ -374,26 +333,39 @@ const GameBoard = ({ gameState, onInput }) => {
     );
   };
   
-  // Render touch controls hint overlay
+  // Render touch controls hint overlay (only at beginning)
   const renderTouchHint = () => {
-    if (!isMobile || gameOver) return null;
+    if (!isMobile || gameOver || !showControlsHint) return null;
     
     const boardWidth = BOARD_WIDTH * cellSize;
     const boardHeight = BOARD_HEIGHT * cellSize;
     
     return (
-      <Group>
+      <Group className="controls-hint">
         <Rect
-          x={0}
-          y={0}
-          width={boardWidth}
-          height={boardHeight}
-          fill="rgba(0, 0, 0, 0.1)"
-          opacity={0.3}
+          x={boardWidth / 2 - 140}
+          y={boardHeight / 2 - 70}
+          width={280}
+          height={140}
+          fill="rgba(0, 0, 0, 0.7)"
+          cornerRadius={10}
         />
         <Text
           x={boardWidth / 2}
-          y={boardHeight / 2 - 30}
+          y={boardHeight / 2 - 50}
+          text="How to Play:"
+          fontSize={16}
+          fontFamily="sans-serif"
+          fontStyle="bold"
+          fill="white"
+          align="center"
+          verticalAlign="middle"
+          width={boardWidth}
+          offsetX={boardWidth / 2}
+        />
+        <Text
+          x={boardWidth / 2}
+          y={boardHeight / 2 - 20}
           text="Swipe ← → to move"
           fontSize={14}
           fontFamily="sans-serif"
@@ -405,7 +377,7 @@ const GameBoard = ({ gameState, onInput }) => {
         />
         <Text
           x={boardWidth / 2}
-          y={boardHeight / 2}
+          y={boardHeight / 2 + 10}
           text="Tap to rotate"
           fontSize={14}
           fontFamily="sans-serif"
@@ -417,7 +389,7 @@ const GameBoard = ({ gameState, onInput }) => {
         />
         <Text
           x={boardWidth / 2}
-          y={boardHeight / 2 + 30}
+          y={boardHeight / 2 + 40}
           text="Swipe ↑ for HARD DROP"
           fontSize={16}
           fontFamily="sans-serif"
@@ -445,18 +417,49 @@ const GameBoard = ({ gameState, onInput }) => {
           <Group>{renderGhostBlock()}</Group>
           <Group>{renderPlacedBlocks()}</Group>
           <Group>{renderCurrentBlock()}</Group>
-          {renderNextBlockPreview()}
+          
+          {/* Game Info Overlay */}
+          <GameInfoOverlay 
+            gameState={gameState} 
+            cellSize={cellSize} 
+            boardWidth={BOARD_WIDTH}
+          />
+          
           {renderGameOver()}
-          {isPaused ? null : renderTouchHint()}
+          {renderTouchHint()}
         </Layer>
       </Stage>
-      {isMobile && !gameOver && !isPaused && (
-        <div className="touch-controls-hint absolute top-2 left-0 right-0 text-center pointer-events-none">
-          <div className="inline-block bg-black bg-opacity-50 text-white text-xs px-3 py-1 rounded-full">
-            <span className="text-yellow-300 font-bold">↑ HARD DROP</span> • Tap to rotate
+      
+      {/* Help Icon (appears after control hints disappear) */}
+      {showHelpIcon && isMobile && !gameOver && (
+        <button 
+          className="help-icon" 
+          onClick={toggleHelpModal}
+          aria-label="Game Controls Help"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
+      )}
+      
+      {/* Help Modal */}
+      {showHelpModal && (
+        <div className="help-modal">
+          <div className="help-modal-content">
+            <h3>Game Controls</h3>
+            <ul>
+              <li><strong>Swipe Left/Right:</strong> Move piece</li>
+              <li><strong>Tap:</strong> Rotate piece</li>
+              <li><strong>Swipe Down:</strong> Move down</li>
+              <li><strong>Swipe Up:</strong> Hard drop</li>
+            </ul>
+            <button onClick={toggleHelpModal}>Close</button>
           </div>
         </div>
       )}
+      
+      {/* Hard Drop Notification is handled by CSS/JS */}
     </div>
   );
 };

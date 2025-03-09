@@ -1,177 +1,446 @@
-/* Game-specific styles */
-#root {
-  width: 100%;
-  min-height: 100vh;
-}
+/* -----------------------------
+   BASE LAYOUT STYLES
+   ----------------------------- */
+   #root {
+    width: 100%;
+    min-height: 100vh;
+  }
+  
+  /* Prevent zooming on double-tap on iOS while allowing pinch zoom */
+  * {
+    touch-action: manipulation;
+  }
+  
+  .card {
+    padding: 2em;
+  }
+  
+  .read-the-docs {
+    color: #888;
+  }
+  
+  /* -----------------------------
+     ANIMATIONS
+     ----------------------------- */
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  
+  @keyframes hardDropPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.9; }
+  }
+  
+  @keyframes fadeOut {
+    0% { opacity: 0.8; }
+    70% { opacity: 0.8; }
+    100% { opacity: 0; }
+  }
+  
+  @keyframes swipeHint {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  
+  @keyframes subtleSwipeHint {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    50% {
+      transform: translateX(10px);
+    }
+  }
+  
+  @keyframes logo-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* Apply animations */
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .text-yellow-300.font-bold {
+    animation: hardDropPulse 2s infinite;
+    display: inline-block;
+  }
+  
+  .game-board .touch-controls-hint {
+    animation: fadeOut 3s forwards;
+  }
 
-/* Animations */
-@keyframes pulse {
-  0%, 100% {
+  /* Temporary controls hint */
+  .controls-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 15px 20px;
+    border-radius: 10px;
+    z-index: 100;
+    text-align: center;
+    animation: fadeOut 3s forwards;
+  }
+  
+  .swipe-hint-animation {
+    animation: subtleSwipeHint 2s infinite;
+  }
+  
+  @media (prefers-reduced-motion: no-preference) {
+    a:nth-of-type(2) .logo {
+      animation: logo-spin infinite 20s linear;
+    }
+  }
+  
+  /* -----------------------------
+     LOGO STYLES
+     ----------------------------- */
+  .logo {
+    height: 6em;
+    padding: 1.5em;
+    will-change: filter;
+    transition: filter 300ms;
+  }
+  
+  .logo:hover {
+    filter: drop-shadow(0 0 2em #646cffaa);
+  }
+  
+  .logo.react:hover {
+    filter: drop-shadow(0 0 2em #61dafbaa);
+  }
+  
+  /* -----------------------------
+     GAME BOARD STYLES
+     ----------------------------- */
+  .game-board {
+    touch-action: none; /* Prevent scrolling on mobile when using touch controls */
+    position: relative;
+  }
+
+  /* Improve overlay visibility */
+.game-info-overlay {
+  background-color: rgba(20, 30, 40, 0.85); /* Slightly more opaque */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
+}
+  
+  /* Compact header styles */
+  .compact-header {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .compact-header .score-display,
+  .compact-header .level-display,
+  .compact-header .lines-display {
+    text-align: center;
+  }
+  
+  /* Mobile game info overlay */
+  .mobile-game-info {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 5;
+  }
+  
+  .block-preview-mobile {
+    background-color: rgba(31, 41, 55, 0.8);
+    border-radius: 0.375rem;
+    padding: 0.25rem;
+  }
+  
+  /* Mobile game over overlay */
+  .mobile-game-over {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* -----------------------------
+     TOUCH CONTROLS
+     ----------------------------- */
+  .touch-swipe-area {
+    position: relative;
+    overflow: hidden;
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+  }
+  
+  .touch-swipe-area::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+    animation: swipeHint 2s ease-in-out infinite;
+  }
+  
+  /* Enhance button visibility */
+  .touch-controls button {
+    border-radius: 8px; /* Slightly rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Shadow for depth */
+    transition: all 0.15s ease; /* Smooth transitions */
+  }
+
+  /* Active state for buttons */
+  .touch-controls button:active {
+    transform: translateY(2px) scale(0.97);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  .touch-controls button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  
+  .touch-controls button:active::after {
     opacity: 1;
   }
-  50% {
-    opacity: 0.5;
+
+  /* Hard drop button enhancements */
+  .touch-controls .hard-drop-button {
+    background-color: #e6a100; /* More distinctive color */
+    box-shadow: 0 3px 6px rgba(230, 161, 0, 0.4);
   }
+    
+  /* -----------------------------
+     RESPONSIVE STYLES
+     ----------------------------- */
+  @media (max-width: 768px) {
+    .game-controls {
+      margin-top: 0.5rem;
+    }
+    
+    /* Make buttons larger on mobile for better touch targets */
+    button {
+      min-height: 44px; /* Apple's recommended minimum touch target size */
+    }
+    
+    .touch-controls button {
+      min-height: 60px;
+      height: auto;
+      font-size: 1.2rem;
+    }
+    
+    /* Enhanced visibility for active touch areas */
+    .touch-controls button:active {
+      transform: scale(0.95);
+      opacity: 0.8;
+    }
+    
+    /* Adjust game board size for smaller screens */
+    .game-board {
+      max-width: 100%;
+      margin: 0 auto;
+      max-width: 100vw;
+      max-height: 80vh;
+    }
+    
+    /* Ensure game board is centered */
+    .game-board canvas {
+      max-height: 70vh;
+      object-fit: contain;
+      margin: 0 auto;
+      display: block !important;
+    }
+    
+    /* Reduce padding on mobile */
+    .game-container {
+      padding: 0.5rem !important;
+      padding-bottom: 100px !important; /* Fix bottom padding to ensure controls don't get cut off */
+    }
+    
+    /* Ensure the game board is visible without scrolling on most devices */
+    .game-main {
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+    
+    /* Full width container on mobile */
+    .container {
+      width: 100% !important;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+    
+    /* Improved contrast for game elements */
+    .text-gray-400 {
+      color: rgba(255, 255, 255, 0.8);
+    }
+    
+    /* More visible button states */
+    button:active {
+      transform: translateY(1px);
+    }
+    
+    /* Improve visual feedback for touch interactions */
+    .game-board canvas:active {
+      opacity: 0.95;
+    }
+  }
+  
+  /* Optimize for different screen orientations */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .game-main {
+      flex-direction: row !important;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .game-board {
+      max-height: 90vh;
+      max-width: 50vw;
+    }
+    
+    .touch-controls {
+      max-width: 40vw;
+    }
+  }
+
+  /* Help icon styles */
+.help-icon {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  opacity: 0.7;
+  transition: opacity 0.2s, transform 0.2s;
 }
 
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.help-icon:hover,
+.help-icon:focus {
+  opacity: 1;
 }
 
-/* Game board styles */
-.game-board {
-  touch-action: none; /* Prevent scrolling on mobile when using touch controls */
-  position: relative;
+.help-icon:active {
+  transform: scale(0.95);
 }
 
-/* Compact header styles */
-.compact-header {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+/* Help modal styles */
+.help-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
 }
 
-.compact-header .score-display,
-.compact-header .level-display,
-.compact-header .lines-display {
+.help-modal-content {
+  background-color: #1f2937;
+  border-radius: 10px;
+  padding: 20px;
+  width: 90%;
+  max-width: 300px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.help-modal-content h3 {
+  color: #4ade80;
+  font-size: 18px;
+  margin-bottom: 15px;
   text-align: center;
 }
 
-/* Mobile game info overlay */
-.mobile-game-info {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 5;
+.help-modal-content ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 20px;
 }
 
-.block-preview-mobile {
-  background-color: rgba(31, 41, 55, 0.8);
-  border-radius: 0.375rem;
-  padding: 0.25rem;
+.help-modal-content li {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f3f4f6;
 }
 
-/* Mobile game over overlay */
-.mobile-game-over {
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+.help-modal-content li:last-child {
+  border-bottom: none;
 }
 
-/* Hard drop highlight animation */
-@keyframes hardDropPulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.1); opacity: 0.9; }
+.help-modal-content li strong {
+  color: #38bdf8;
 }
 
-.text-yellow-300.font-bold {
-  animation: hardDropPulse 2s infinite;
-  display: inline-block;
-}
-
-/* Touch hint overlay fade-in/fade-out */
-@keyframes fadeOut {
-  0% { opacity: 0.8; }
-  70% { opacity: 0.8; }
-  100% { opacity: 0; }
-}
-
-.game-board .touch-controls-hint {
-  animation: fadeOut 3s forwards;
-}
-
-/* Touch swipe area */
-.touch-swipe-area {
-  position: relative;
-  overflow: hidden;
-  border: 1px dashed rgba(255, 255, 255, 0.2);
-}
-
-.touch-swipe-area::before {
-  content: '';
-  position: absolute;
+.help-modal-content button {
+  background-color: #4ade80;
+  color: #1f2937;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
   width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
-  animation: swipeHint 2s ease-in-out infinite;
 }
 
-@keyframes swipeHint {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+.help-modal-content button:hover {
+  background-color: #22c55e;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .game-controls {
-    margin-top: 0.5rem;
-  }
-  
-  /* Make buttons larger on mobile for better touch targets */
-  .touch-controls button {
-    height: 3.5rem;
-  }
-  
-  /* Adjust game board size for smaller screens */
-  .game-board {
-    max-width: 100%;
-    margin: 0 auto;
-  }
-  
-  /* Reduce padding on mobile */
-  .game-container {
-    padding: 0.5rem !important;
-  }
-  
-  /* Ensure the game board is visible without scrolling on most devices */
-  .game-main {
-    max-height: 90vh;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  /* Ensure the game board takes priority in the layout */
-  .game-board canvas {
-    max-height: 70vh;
-    object-fit: contain;
-  }
+.help-modal-content button:active {
+  transform: translateY(1px);
 }
 
-/* Prevent zooming on double-tap on iOS */
-* {
-  touch-action: manipulation;
+/* Controls hint styles */
+.controls-hint {
+  animation: fadeOut 5s forwards;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Hard drop notification */
+.hard-drop-notification {
+  position: absolute;
+  top: 60px; /* Below the game info overlay */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #fbbf24; /* Yellow */
+  font-weight: bold;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  z-index: 20;
+  pointer-events: none;
+  animation: notificationFade 1s forwards;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+@keyframes notificationFade {
+  0% { opacity: 0; transform: translate(-50%, 5px); }
+  20% { opacity: 1; transform: translate(-50%, 0); }
+  80% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -5px); }
 }

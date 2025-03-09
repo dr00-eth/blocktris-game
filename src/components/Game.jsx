@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import GameBoard from './GameBoard';
 import GameControls from './GameControls';
-import BlockPreview from './BlockPreview';
-import ScoreBoard from './ScoreBoard';
 import GameFinalize from './GameFinalize';
 import { useGameEngine } from '../hooks/useGameEngine';
-import { getBlockFromSeed } from '../engine/BlockDefinitions';
 
 const Game = ({ wallet }) => {
   const [gameStatus, setGameStatus] = useState('new'); // new, playing, paused, ended
@@ -82,36 +79,6 @@ const Game = ({ wallet }) => {
     isPaused: gameStatus === 'paused'
   };
   
-  // Mobile game info overlay
-  const renderMobileGameInfo = () => {
-    if (!isMobile) return null;
-    
-    return (
-      <div className="mobile-game-info bg-gray-800 bg-opacity-90 p-2 rounded-md mb-2 flex justify-between items-center">
-        <div className="flex-1 flex items-center justify-between">
-          <div className="score-display text-center">
-            <div className="text-xs text-gray-400">Score</div>
-            <div className="text-xl font-bold text-green-400">{gameState.score}</div>
-          </div>
-          
-          <div className="level-display text-center mx-2">
-            <div className="text-xs text-gray-400">Level</div>
-            <div className="text-lg font-bold text-yellow-400">{gameState.level || 1}</div>
-          </div>
-          
-          <div className="lines-display text-center">
-            <div className="text-xs text-gray-400">Lines</div>
-            <div className="text-lg font-bold text-blue-400">{gameState.linesCleared}</div>
-          </div>
-        </div>
-        
-        <div className="ml-2 flex-shrink-0">
-          <BlockPreview nextBlock={gameState.nextBlock} className="mobile-preview" />
-        </div>
-      </div>
-    );
-  };
-  
   // Mobile game over overlay
   const renderMobileGameOver = () => {
     if (!isMobile || !gameState.gameOver) return null;
@@ -156,7 +123,6 @@ const Game = ({ wallet }) => {
     <div className="game-container p-2 sm:p-4 max-w-6xl mx-auto">
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 justify-center items-center lg:items-start">
         <div className="game-main w-full lg:w-auto relative">
-          {renderMobileGameInfo()}
           <GameBoard 
             gameState={enhancedGameState} 
             onInput={onInput}
@@ -175,18 +141,6 @@ const Game = ({ wallet }) => {
         {!isMobile && (
           <div className="game-sidebar w-full lg:max-w-xs">
             <div className="game-info flex flex-col gap-4">
-              <div className="flex flex-row lg:flex-col gap-4">
-                <ScoreBoard 
-                  score={gameState.score} 
-                  linesCleared={gameState.linesCleared}
-                  level={gameState.level || 1}
-                  gameOver={gameState.gameOver} 
-                  className="flex-1"
-                />
-                
-                <BlockPreview nextBlock={gameState.nextBlock} className="flex-1" />
-              </div>
-              
               {gameState.gameOver && (
                 <div className="mt-4">
                   {canFinalizeGame ? (
